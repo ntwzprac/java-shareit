@@ -41,7 +41,8 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
 
-    public User update(long userId, User user) {
+    @Override
+    public User update(Long userId, User user) {
         User oldUser = findById(userId);
 
         if (user.getEmail() != null && isEmailUsed(user.getEmail())) {
