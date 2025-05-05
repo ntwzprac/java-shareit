@@ -21,21 +21,21 @@ public class GlobalExceptionHandler {
         response.put("Ошибка: ", ex.getMessage());
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
-    
+
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<Map<String, String>> handleUserNotFoundException(UserNotFoundException ex) {
         Map<String, String> response = new HashMap<>();
         response.put("Ошибка: ", ex.getMessage());
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
-    
+
     @ExceptionHandler(EmailNotGivenException.class)
     public ResponseEntity<Map<String, String>> handleEmailNotGivenException(EmailNotGivenException ex) {
         Map<String, String> response = new HashMap<>();
         response.put("Ошибка: ", ex.getMessage());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
-    
+
     @ExceptionHandler(ItemNotFoundException.class)
     public ResponseEntity<Map<String, String>> handleItemNotFoundException(ItemNotFoundException ex) {
         Map<String, String> response = new HashMap<>();

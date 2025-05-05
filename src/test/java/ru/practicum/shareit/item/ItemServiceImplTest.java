@@ -149,4 +149,4 @@ class ItemServiceImplTest {
         assertTrue(searchResults.isEmpty());
         verify(itemRepository, never()).search(anyString());
     }
-} 
+}
