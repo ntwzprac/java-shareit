@@ -9,7 +9,11 @@ import java.util.Objects;
 
 @Repository
 public class UserRepositoryImpl implements UserRepository {
-    List<User> users = new ArrayList<>();
+    List<User> users;
+
+    public UserRepositoryImpl() {
+        this.users = new ArrayList<>();
+    }
 
     @Override
     public User findById(Long id) {
