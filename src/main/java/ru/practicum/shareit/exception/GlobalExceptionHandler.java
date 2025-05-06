@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import ru.practicum.shareit.item.exceptions.ItemNotFoundException;
+import ru.practicum.shareit.item.exceptions.ItemAccessDeniedException;
 import ru.practicum.shareit.user.exception.EmailAlreadyUsedException;
 import ru.practicum.shareit.user.exception.EmailNotGivenException;
 import ru.practicum.shareit.user.exception.UserNotFoundException;
@@ -41,5 +42,12 @@ public class GlobalExceptionHandler {
         Map<String, String> response = new HashMap<>();
         response.put("Ошибка: ", ex.getMessage());
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(ItemAccessDeniedException.class)
+    public ResponseEntity<Map<String, String>> handleItemAccessDeniedException(ItemAccessDeniedException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("Ошибка: ", ex.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
     }
 }

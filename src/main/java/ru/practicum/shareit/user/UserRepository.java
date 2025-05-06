@@ -2,6 +2,8 @@ package ru.practicum.shareit.user;
 
 import ru.practicum.shareit.user.model.User;
 
+import java.util.List;
+
 public interface UserRepository {
     User findById(Long id);
 
@@ -9,5 +11,7 @@ public interface UserRepository {
 
     User save(User user);
 
-    void delete(User user);
+    void delete(Long userId);
+
+    List<User> findAll();
 }

@@ -4,46 +4,48 @@ import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public class ItemRepositoryImpl implements ItemRepository {
-    private List<Item> items;
+    private final Map<Long, Item> items;
 
     public ItemRepositoryImpl() {
-        this.items = new ArrayList<>();
+        this.items = new HashMap<>();
     }
 
     @Override
     public Item findById(Long id) {
-        return items.stream()
-                .filter(item -> item.getId().equals(id))
-                .findFirst()
-                .orElse(null);
+        return items.get(id);
     }
 
     @Override
     public Item save(Item item) {
-        items.add(item);
+        items.put(item.getId(), item);
         return item;
     }
 
     @Override
     public List<Item> findAllByUser(Long userId) {
-        return items.stream()
+        return items.values().stream()
                 .filter(item -> item.getOwner() != null && item.getOwner().getId().equals(userId))
                 .toList();
     }
 
     @Override
     public void delete(Item item) {
-        items.remove(item);
+        items.remove(item.getId());
     }
 
     @Override
     public List<Item> search(String text) {
-        return items.stream()
-                .filter(item -> item.getName().toLowerCase().contains(text.toLowerCase()) && item.getAvailable())
+        String searchText = text.toLowerCase();
+        return items.values().stream()
+                .filter(item -> item.getAvailable())
+                .filter(item -> item.getName().toLowerCase().contains(searchText) || 
+                        item.getDescription().toLowerCase().contains(searchText))
                 .toList();
     }
 }

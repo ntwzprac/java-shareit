@@ -1,48 +1,58 @@
 package ru.practicum.shareit.item;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.item.exceptions.ItemNotFoundException;
+import ru.practicum.shareit.item.exceptions.ItemAccessDeniedException;
+import ru.practicum.shareit.user.exception.UserNotFoundException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserService;
-import ru.practicum.shareit.user.exception.UserNotFoundException;
+import ru.practicum.shareit.user.mapper.UserMapper;
+import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserService userService;
     private long lastId = 0;
 
-    @Autowired
-    public ItemServiceImpl(ItemRepository itemRepository, UserService userService) {
-        this.itemRepository = itemRepository;
-        this.userService = userService;
+    private User getUserOrThrow(Long userId) {
+        return UserMapper.toUser(userService.findById(userId));
+    }
+
+    private Item getItemOrThrow(Long itemId) {
+        Item item = itemRepository.findById(itemId);
+        if (item == null) {
+            throw new ItemNotFoundException(String.format("Предмет с id %d не найден", itemId));
+        }
+        return item;
+    }
+
+    private void checkItemOwnership(Item item, Long userId) {
+        if (!item.getOwner().getId().equals(userId)) {
+            throw new ItemAccessDeniedException(
+                String.format("Пользователь с id %d не является владельцем предмета с id %d", userId, item.getId())
+            );
+        }
     }
 
     @Override
     public Item create(Item item, Long userId) {
-        if (userService.findById(userId) == null) {
-            throw new UserNotFoundException("Пользователь не найден");
-        }
+        User user = getUserOrThrow(userId);
         item.setId(++lastId);
-        item.setOwner(userService.findById(userId));
-
+        item.setOwner(user);
         return itemRepository.save(item);
     }
 
     @Override
     public Item update(Item item, Long itemId, Long userId) {
-        if (userService.findById(userId) == null) {
-            throw new UserNotFoundException("Пользователь не найден");
-        }
-
-        Item existingItem = itemRepository.findById(itemId);
-        if (existingItem == null || (existingItem.getOwner() != null && !existingItem.getOwner().getId().equals(userId))) {
-            throw new ItemNotFoundException("Вещь не найдена или не принадлежит пользователю");
-        }
-
+        User user = getUserOrThrow(userId);
+        Item existingItem = getItemOrThrow(itemId);
+        checkItemOwnership(existingItem, userId);
+        
         if (item.getName() != null) {
             existingItem.setName(item.getName());
         }
@@ -52,19 +62,17 @@ public class ItemServiceImpl implements ItemService {
         if (item.getAvailable() != null) {
             existingItem.setAvailable(item.getAvailable());
         }
-
         return itemRepository.save(existingItem);
     }
 
     @Override
     public Item findById(Long id) {
-        return itemRepository.findById(id);
+        return getItemOrThrow(id);
     }
 
     @Override
     public List<Item> findAllByUser(Long userId) {
-        if (userService.findById(userId) == null) throw new UserNotFoundException("Пользователь не найден");
-
+        getUserOrThrow(userId);
         return itemRepository.findAllByUser(userId);
     }
 
