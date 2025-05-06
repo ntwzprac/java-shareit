@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.item.exceptions.ItemNotFoundException;
 import ru.practicum.shareit.item.exceptions.ItemAccessDeniedException;
-import ru.practicum.shareit.user.exception.UserNotFoundException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserService;
 import ru.practicum.shareit.user.mapper.UserMapper;
@@ -52,7 +51,6 @@ public class ItemServiceImpl implements ItemService {
         User user = getUserOrThrow(userId);
         Item existingItem = getItemOrThrow(itemId);
         checkItemOwnership(existingItem, userId);
-        
         if (item.getName() != null) {
             existingItem.setName(item.getName());
         }

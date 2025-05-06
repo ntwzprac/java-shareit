@@ -6,7 +6,6 @@ import ru.practicum.shareit.item.dto.ItemUpdateDto;
 import ru.practicum.shareit.item.model.Item;
 
 public class ItemMapper {
-    
     public static Item toItem(ItemCreateDto itemCreateDto) {
         return new Item(
             null,
@@ -48,4 +47,4 @@ public class ItemMapper {
             null
         );
     }
-} 
+}
