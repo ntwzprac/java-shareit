@@ -3,6 +3,7 @@ package ru.practicum.shareit.item;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.practicum.shareit.item.exceptions.ItemNotFoundException;
+import ru.practicum.shareit.item.exceptions.ItemAccessDeniedException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserService;
 import ru.practicum.shareit.user.dto.UserDto;
@@ -100,7 +101,7 @@ class ItemServiceImplTest {
         when(userService.findById(2L)).thenReturn(otherUserDto);
         when(itemRepository.findById(1L)).thenReturn(existingItem);
 
-        assertThrows(ItemNotFoundException.class, () -> itemService.update(updateData, 1L, 2L));
+        assertThrows(ItemAccessDeniedException.class, () -> itemService.update(updateData, 1L, 2L));
         verify(itemRepository, never()).save(any(Item.class));
     }
 
