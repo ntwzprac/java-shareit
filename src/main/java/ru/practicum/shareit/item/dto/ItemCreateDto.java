@@ -1,6 +1,6 @@
 package ru.practicum.shareit.item.dto;
 
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,10 +8,12 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class ItemCreateDto {
-    @NotNull @NotEmpty
+    @NotBlank(message = "Название не может быть пустым")
     private String name;
-    @NotNull
+    
+    @NotBlank(message = "Описание не может быть пустым")
     private String description;
-    @NotNull
+    
+    @NotNull(message = "Статус доступности должен быть указан")
     private Boolean available;
 }
