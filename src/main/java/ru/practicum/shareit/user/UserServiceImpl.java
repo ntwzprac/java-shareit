@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.user.dto.UserCreateDto;
 import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.dto.UserUpdateDto;
 import ru.practicum.shareit.user.exception.EmailAlreadyUsedException;
 import ru.practicum.shareit.user.exception.UserNotFoundException;
 import ru.practicum.shareit.user.mapper.UserMapper;
@@ -30,19 +31,22 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto update(Long userId, UserCreateDto userCreateDto) {
-        User existingUser = UserMapper.toUser(findById(userId));
+    public UserDto update(Long userId, UserUpdateDto userUpdateDto) {
+        User existingUser = userRepository.findById(userId);
+        if (existingUser == null) {
+            throw new UserNotFoundException(String.format("Пользователь с id %d не найден", userId));
+        }
 
-        if (userCreateDto.getEmail() != null && !userCreateDto.getEmail().equals(existingUser.getEmail())) {
-            User userWithSameEmail = userRepository.findByEmail(userCreateDto.getEmail());
+        if (userUpdateDto.getEmail() != null && !userUpdateDto.getEmail().equals(existingUser.getEmail())) {
+            User userWithSameEmail = userRepository.findByEmail(userUpdateDto.getEmail());
             if (userWithSameEmail != null) {
                 throw new EmailAlreadyUsedException("Email уже используется");
             }
-            existingUser.setEmail(userCreateDto.getEmail());
+            existingUser.setEmail(userUpdateDto.getEmail());
         }
 
-        if (userCreateDto.getName() != null) {
-            existingUser.setName(userCreateDto.getName());
+        if (userUpdateDto.getName() != null) {
+            existingUser.setName(userUpdateDto.getName());
         }
 
         return UserMapper.toUserDto(userRepository.save(existingUser));

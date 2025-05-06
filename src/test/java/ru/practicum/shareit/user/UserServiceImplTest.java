@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.practicum.shareit.user.dto.UserCreateDto;
 import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.dto.UserUpdateDto;
 import ru.practicum.shareit.user.exception.UserNotFoundException;
 import ru.practicum.shareit.user.model.User;
 
@@ -51,7 +52,7 @@ class UserServiceImplTest {
         UserCreateDto userCreateDto = new UserCreateDto("Test User", "test@test.com");
         UserDto savedUser = userService.create(userCreateDto);
 
-        UserCreateDto updateData = new UserCreateDto("Updated Name", "updated@test.com");
+        UserUpdateDto updateData = new UserUpdateDto("Updated Name", "updated@test.com");
         UserDto updatedUser = userService.update(savedUser.getId(), updateData);
 
         assertEquals("Updated Name", updatedUser.getName());
@@ -60,7 +61,7 @@ class UserServiceImplTest {
 
     @Test
     void update_NonExistingUser_ShouldThrowException() {
-        UserCreateDto updateData = new UserCreateDto("Updated Name", "updated@test.com");
+        UserUpdateDto updateData = new UserUpdateDto("Updated Name", "updated@test.com");
         assertThrows(UserNotFoundException.class, () -> userService.update(999L, updateData));
     }
 
