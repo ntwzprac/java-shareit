@@ -2,8 +2,8 @@ package ru.practicum.shareit.user;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.practicum.shareit.user.exception.EmailAlreadyUsedException;
-import ru.practicum.shareit.user.exception.EmailNotGivenException;
+import ru.practicum.shareit.user.dto.UserCreateDto;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.exception.UserNotFoundException;
 import ru.practicum.shareit.user.model.User;
 
@@ -20,9 +20,9 @@ class UserServiceImplTest {
     }
 
     @Test
-    void save_ValidUser_ShouldSaveUser() {
-        User user = new User(null, "Test User", "test@test.com");
-        User savedUser = userService.save(user);
+    void create_ValidUser_ShouldSaveUser() {
+        UserCreateDto userCreateDto = new UserCreateDto("Test User", "test@test.com");
+        UserDto savedUser = userService.create(userCreateDto);
 
         assertNotNull(savedUser.getId());
         assertEquals("Test User", savedUser.getName());
@@ -30,43 +30,29 @@ class UserServiceImplTest {
     }
 
     @Test
-    void save_UserWithoutEmail_ShouldThrowException() {
-        User user = new User(null, "Test User", null);
-
-        assertThrows(EmailNotGivenException.class, () -> userService.save(user));
-    }
-
-    @Test
-    void save_DuplicateEmail_ShouldThrowException() {
-        User user1 = new User(null, "Test User 1", "test@test.com");
-        User user2 = new User(null, "Test User 2", "test@test.com");
-
-        userService.save(user1);
-        assertThrows(EmailAlreadyUsedException.class, () -> userService.save(user2));
-    }
-
-    @Test
     void findById_ExistingUser_ShouldReturnUser() {
-        User user = new User(null, "Test User", "test@test.com");
-        User savedUser = userService.save(user);
+        UserCreateDto userCreateDto = new UserCreateDto("Test User", "test@test.com");
+        UserDto savedUser = userService.create(userCreateDto);
 
-        User foundUser = userService.findById(savedUser.getId());
+        UserDto foundUser = userService.findById(savedUser.getId());
         assertNotNull(foundUser);
         assertEquals(savedUser.getId(), foundUser.getId());
+        assertEquals(savedUser.getName(), foundUser.getName());
+        assertEquals(savedUser.getEmail(), foundUser.getEmail());
     }
 
     @Test
-    void findById_NonExistingUser_ShouldReturnNull() {
-        assertNull(userService.findById(999L));
+    void findById_NonExistingUser_ShouldThrowException() {
+        assertThrows(UserNotFoundException.class, () -> userService.findById(999L));
     }
 
     @Test
     void update_ValidUser_ShouldUpdateUser() {
-        User user = new User(null, "Test User", "test@test.com");
-        User savedUser = userService.save(user);
+        UserCreateDto userCreateDto = new UserCreateDto("Test User", "test@test.com");
+        UserDto savedUser = userService.create(userCreateDto);
 
-        User updateData = new User(null, "Updated Name", "updated@test.com");
-        User updatedUser = userService.update(savedUser.getId(), updateData);
+        UserCreateDto updateData = new UserCreateDto("Updated Name", "updated@test.com");
+        UserDto updatedUser = userService.update(savedUser.getId(), updateData);
 
         assertEquals("Updated Name", updatedUser.getName());
         assertEquals("updated@test.com", updatedUser.getEmail());
@@ -74,16 +60,16 @@ class UserServiceImplTest {
 
     @Test
     void update_NonExistingUser_ShouldThrowException() {
-        User updateData = new User(null, "Updated Name", "updated@test.com");
+        UserCreateDto updateData = new UserCreateDto("Updated Name", "updated@test.com");
         assertThrows(UserNotFoundException.class, () -> userService.update(999L, updateData));
     }
 
     @Test
     void delete_ExistingUser_ShouldDeleteUser() {
-        User user = new User(null, "Test User", "test@test.com");
-        User savedUser = userService.save(user);
+        UserCreateDto userCreateDto = new UserCreateDto("Test User", "test@test.com");
+        UserDto savedUser = userService.create(userCreateDto);
 
-        userService.delete(savedUser);
-        assertNull(userService.findById(savedUser.getId()));
+        userService.delete(savedUser.getId());
+        assertThrows(UserNotFoundException.class, () -> userService.findById(savedUser.getId()));
     }
 }

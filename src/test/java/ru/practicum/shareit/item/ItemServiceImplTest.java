@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import ru.practicum.shareit.item.exceptions.ItemNotFoundException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserService;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.exception.UserNotFoundException;
 import ru.practicum.shareit.user.model.User;
 
@@ -28,10 +29,11 @@ class ItemServiceImplTest {
     @Test
     void create_ValidItem_ShouldCreateItem() {
         User owner = new User(1L, "Test User", "test@test.com");
+        UserDto ownerDto = new UserDto(1L, "Test User", "test@test.com");
         Item item = new Item(null, "Test Item", "Test Description", true, null, null);
         Item savedItem = new Item(1L, "Test Item", "Test Description", true, owner, null);
 
-        when(userService.findById(1L)).thenReturn(owner);
+        when(userService.findById(1L)).thenReturn(ownerDto);
         when(itemRepository.save(any(Item.class))).thenReturn(savedItem);
 
         Item createdItem = itemService.create(item, 1L);
@@ -48,7 +50,7 @@ class ItemServiceImplTest {
     void create_NonExistingUser_ShouldThrowException() {
         Item item = new Item(null, "Test Item", "Test Description", true, null, null);
 
-        when(userService.findById(1L)).thenReturn(null);
+        when(userService.findById(1L)).thenThrow(new UserNotFoundException("Пользователь не найден"));
 
         assertThrows(UserNotFoundException.class, () -> itemService.create(item, 1L));
         verify(itemRepository, never()).save(any(Item.class));
@@ -57,11 +59,12 @@ class ItemServiceImplTest {
     @Test
     void update_ValidItem_ShouldUpdateItem() {
         User owner = new User(1L, "Test User", "test@test.com");
+        UserDto ownerDto = new UserDto(1L, "Test User", "test@test.com");
         Item existingItem = new Item(1L, "Original Name", "Original Description", true, owner, null);
         Item updateData = new Item(null, "Updated Name", "Updated Description", false, null, null);
         Item updatedItem = new Item(1L, "Updated Name", "Updated Description", false, owner, null);
 
-        when(userService.findById(1L)).thenReturn(owner);
+        when(userService.findById(1L)).thenReturn(ownerDto);
         when(itemRepository.findById(1L)).thenReturn(existingItem);
         when(itemRepository.save(any(Item.class))).thenReturn(updatedItem);
 
@@ -76,9 +79,10 @@ class ItemServiceImplTest {
     @Test
     void update_NonExistingItem_ShouldThrowException() {
         User owner = new User(1L, "Test User", "test@test.com");
+        UserDto ownerDto = new UserDto(1L, "Test User", "test@test.com");
         Item updateData = new Item(null, "Updated Name", "Updated Description", false, null, null);
 
-        when(userService.findById(1L)).thenReturn(owner);
+        when(userService.findById(1L)).thenReturn(ownerDto);
         when(itemRepository.findById(1L)).thenReturn(null);
 
         assertThrows(ItemNotFoundException.class, () -> itemService.update(updateData, 1L, 1L));
@@ -89,10 +93,11 @@ class ItemServiceImplTest {
     void update_ItemNotOwnedByUser_ShouldThrowException() {
         User owner = new User(1L, "Test User", "test@test.com");
         User otherUser = new User(2L, "Other User", "other@test.com");
+        UserDto otherUserDto = new UserDto(2L, "Other User", "other@test.com");
         Item existingItem = new Item(1L, "Original Name", "Original Description", true, owner, null);
         Item updateData = new Item(null, "Updated Name", "Updated Description", false, null, null);
 
-        when(userService.findById(2L)).thenReturn(otherUser);
+        when(userService.findById(2L)).thenReturn(otherUserDto);
         when(itemRepository.findById(1L)).thenReturn(existingItem);
 
         assertThrows(ItemNotFoundException.class, () -> itemService.update(updateData, 1L, 2L));
@@ -113,10 +118,11 @@ class ItemServiceImplTest {
     @Test
     void findAllByUser_ShouldReturnUserItems() {
         User owner = new User(1L, "Test User", "test@test.com");
+        UserDto ownerDto = new UserDto(1L, "Test User", "test@test.com");
         Item item1 = new Item(1L, "Item 1", "Description 1", true, owner, null);
         Item item2 = new Item(2L, "Item 2", "Description 2", true, owner, null);
 
-        when(userService.findById(1L)).thenReturn(owner);
+        when(userService.findById(1L)).thenReturn(ownerDto);
         when(itemRepository.findAllByUser(1L)).thenReturn(List.of(item1, item2));
 
         List<Item> userItems = itemService.findAllByUser(1L);
@@ -127,7 +133,7 @@ class ItemServiceImplTest {
 
     @Test
     void findAllByUser_NonExistingUser_ShouldThrowException() {
-        when(userService.findById(1L)).thenReturn(null);
+        when(userService.findById(1L)).thenThrow(new UserNotFoundException("Пользователь не найден"));
         assertThrows(UserNotFoundException.class, () -> itemService.findAllByUser(1L));
     }
 
