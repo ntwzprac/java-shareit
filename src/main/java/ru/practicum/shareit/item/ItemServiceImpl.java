@@ -38,13 +38,13 @@ public class ItemServiceImpl implements ItemService {
 
     private Item getItemOrThrow(Long itemId) {
         return itemRepository.findById(itemId)
-            .orElseThrow(() -> new ItemNotFoundException(String.format("Предмет с id %d не найден", itemId)));
+                .orElseThrow(() -> new ItemNotFoundException(String.format("Предмет с id %d не найден", itemId)));
     }
 
     private void checkItemOwnership(Item item, Long userId) {
         if (!item.getOwner().getId().equals(userId)) {
             throw new ItemAccessDeniedException(
-                String.format("Пользователь с id %d не является владельцем предмета с id %d", userId, item.getId())
+                    String.format("Пользователь с id %d не является владельцем предмета с id %d", userId, item.getId())
             );
         }
     }
@@ -101,21 +101,21 @@ public class ItemServiceImpl implements ItemService {
     public CommentDto addComment(Long itemId, Long userId, CommentDto commentDto) {
         Item item = getItemOrThrow(itemId);
         User user = getUserOrThrow(userId);
-        
+
         if (!bookingValidationService.hasUserBookedItem(userId, itemId)) {
             throw new CommentNotAllowedException(
-                String.format("Пользователь с id %d не может оставить комментарий к предмету с id %d", userId, itemId)
+                    String.format("Пользователь с id %d не может оставить комментарий к предмету с id %d", userId, itemId)
             );
         }
-        
+
         Comment comment = commentMapper.toComment(commentDto);
         comment.setItem(item);
         comment.setAuthor(user);
         comment.setCreated(LocalDateTime.now());
-        
+
         return commentMapper.toDto(commentRepository.save(comment));
     }
-    
+
     @Override
     public List<CommentDto> getItemComments(Long itemId) {
         getItemOrThrow(itemId);
@@ -130,9 +130,9 @@ public class ItemServiceImpl implements ItemService {
         if (!item.getOwner().getId().equals(userId)) {
             return null;
         }
-        
+
         return bookingRepository.findFirstByItemIdAndStatusAndStartBeforeOrderByStartDesc(
-                itemId, 
+                itemId,
                 BookingStatus.APPROVED,
                 LocalDateTime.now()
         ).map(BookingMapper::toBookingDto).orElse(null);
@@ -144,9 +144,9 @@ public class ItemServiceImpl implements ItemService {
         if (!item.getOwner().getId().equals(userId)) {
             return null;
         }
-        
+
         return bookingRepository.findFirstByItemIdAndStatusAndStartAfterOrderByStartAsc(
-                itemId, 
+                itemId,
                 BookingStatus.APPROVED,
                 LocalDateTime.now()
         ).map(BookingMapper::toBookingDto).orElse(null);

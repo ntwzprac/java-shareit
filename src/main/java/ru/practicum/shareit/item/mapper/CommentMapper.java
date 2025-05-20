@@ -6,7 +6,7 @@ import ru.practicum.shareit.item.model.Comment;
 
 @Component
 public class CommentMapper {
-    
+
     public CommentDto toDto(Comment comment) {
         return CommentDto.builder()
                 .id(comment.getId())
@@ -15,7 +15,7 @@ public class CommentMapper {
                 .created(comment.getCreated())
                 .build();
     }
-    
+
     public Comment toComment(CommentDto dto) {
         return Comment.builder()
                 .id(dto.getId())
@@ -23,4 +23,4 @@ public class CommentMapper {
                 .created(dto.getCreated())
                 .build();
     }
-} 
+}

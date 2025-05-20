@@ -20,10 +20,10 @@ public interface ItemService {
     List<Item> search(String text);
 
     CommentDto addComment(Long itemId, Long userId, CommentDto commentDto);
-    
+
     List<CommentDto> getItemComments(Long itemId);
 
     BookingDto getLastBooking(Long itemId, Long userId);
-    
+
     BookingDto getNextBooking(Long itemId, Long userId);
 }
