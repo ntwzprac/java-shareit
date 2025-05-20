@@ -4,10 +4,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.BookingValidationService;
-import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.exceptions.*;
 import ru.practicum.shareit.item.mapper.CommentMapper;
 import ru.practicum.shareit.item.model.Comment;
@@ -221,47 +221,42 @@ class ItemServiceImplTest {
     }
 
     @Test
-    void getLastBooking_OwnerRequest_ShouldReturnLastBooking() {
+    void getEnrichedItemDto_ShouldReturnEnrichedItem() {
         when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
-        when(bookingRepository.findFirstByItemIdAndStatusAndStartBeforeOrderByStartDesc(
-                eq(1L), eq(BookingStatus.APPROVED), any(LocalDateTime.class)))
-                .thenReturn(Optional.of(booking));
+        when(commentRepository.findAllByItemIdIn(List.of(1L))).thenReturn(List.of(comment));
+        when(commentMapper.toDto(comment)).thenReturn(new CommentDto(1L, "Test Comment", "Booker", LocalDateTime.now()));
+        when(bookingRepository.findAllByItemIdsAndStatusOrderByStartAsc(List.of(1L), BookingStatus.APPROVED))
+                .thenReturn(List.of(booking));
+        when(commentMapper.toDto(any(Comment.class))).thenReturn(new CommentDto(1L, "Test Comment", "Booker", LocalDateTime.now()));
 
-        BookingDto result = itemService.getLastBooking(1L, 1L);
+        ItemDto result = itemService.getEnrichedItemDto(1L, 1L);
 
         assertNotNull(result);
         assertEquals(1L, result.getId());
+        assertEquals("Test Item", result.getName());
+        assertNotNull(result.getComments());
+        assertEquals(1, result.getComments().size());
     }
 
     @Test
-    void getLastBooking_NonOwnerRequest_ShouldReturnNull() {
-        when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
+    void findAllEnrichedByUser_ShouldReturnEnrichedItems() {
+        List<Item> items = List.of(item);
+        when(userService.findById(1L)).thenReturn(new UserDto(1L, "Owner", "owner@test.com"));
+        when(itemRepository.findAllByOwnerId(1L)).thenReturn(items);
+        when(commentRepository.findAllByItemIdIn(List.of(1L))).thenReturn(List.of(comment));
+        when(commentMapper.toDto(comment)).thenReturn(new CommentDto(1L, "Test Comment", "Booker", LocalDateTime.now()));
+        when(bookingRepository.findAllByItemIdsAndStatusOrderByStartAsc(List.of(1L), BookingStatus.APPROVED))
+                .thenReturn(List.of(booking));
+        when(commentMapper.toDto(any(Comment.class))).thenReturn(new CommentDto(1L, "Test Comment", "Booker", LocalDateTime.now()));
 
-        BookingDto result = itemService.getLastBooking(1L, 2L);
+        List<ItemDto> result = itemService.findAllEnrichedByUser(1L);
 
-        assertNull(result);
-    }
-
-    @Test
-    void getNextBooking_OwnerRequest_ShouldReturnNextBooking() {
-        when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
-        when(bookingRepository.findFirstByItemIdAndStatusAndStartAfterOrderByStartAsc(
-                eq(1L), eq(BookingStatus.APPROVED), any(LocalDateTime.class)))
-                .thenReturn(Optional.of(booking));
-
-        BookingDto result = itemService.getNextBooking(1L, 1L);
-
-        assertNotNull(result);
-        assertEquals(1L, result.getId());
-    }
-
-    @Test
-    void getNextBooking_NonOwnerRequest_ShouldReturnNull() {
-        when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
-
-        BookingDto result = itemService.getNextBooking(1L, 2L);
-
-        assertNull(result);
+        assertEquals(1, result.size());
+        ItemDto itemDto = result.get(0);
+        assertEquals(1L, itemDto.getId());
+        assertEquals("Test Item", itemDto.getName());
+        assertNotNull(itemDto.getComments());
+        assertEquals(1, itemDto.getComments().size());
     }
 
     @Test

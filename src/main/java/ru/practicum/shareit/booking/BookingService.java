@@ -16,6 +16,4 @@ public interface BookingService {
     List<BookingDto> findAllByBooker(Long userId, BookingStatus state);
 
     List<BookingDto> findAllByOwner(Long userId, BookingStatus state);
-
-    List<BookingDto> findAllByUser(Long userId, BookingStatus state);
 }

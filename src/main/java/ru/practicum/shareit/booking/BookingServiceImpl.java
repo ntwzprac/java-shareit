@@ -10,7 +10,6 @@ import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.item.ItemService;
-import ru.practicum.shareit.item.exceptions.ItemNotFoundException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserService;
 import ru.practicum.shareit.user.mapper.UserMapper;
@@ -38,10 +37,6 @@ public class BookingServiceImpl implements BookingService {
         User user = UserMapper.toUser(userService.findById(userId));
         Item item = itemService.findById(bookingCreateDto.getItemId());
 
-        if (item == null) {
-            throw new ItemNotFoundException(String.format("Предмет с id %d не найден", bookingCreateDto.getItemId()));
-        }
-
         if (!Item.isAvailable(item)) {
             throw new ItemUnavailableException(String.format("Предмет с id %d недоступен для бронирования", item.getId()));
         }
@@ -57,10 +52,14 @@ public class BookingServiceImpl implements BookingService {
         return BookingMapper.toBookingDto(bookingRepository.save(booking));
     }
 
+    private Booking findBookingById(Long bookingId) {
+        return bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new BookingNotFoundException(String.format("Бронирование с id %d не найдено", bookingId)));
+    }
+
     @Override
     public BookingDto approve(Long bookingId, Long userId, boolean approved) {
-        Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new BookingNotFoundException(String.format("Бронирование с id %d не найдено", bookingId)));
+        Booking booking = findBookingById(bookingId);
 
         if (!booking.getItem().getOwner().getId().equals(userId)) {
             throw new BookingAccessDeniedException("Только владелец вещи может подтверждать бронирование");
@@ -76,8 +75,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingDto findById(Long bookingId, Long userId) {
-        Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new BookingNotFoundException(String.format("Бронирование с id %d не найдено", bookingId)));
+        Booking booking = findBookingById(bookingId);
 
         if (!booking.getBooker().getId().equals(userId) && !booking.getItem().getOwner().getId().equals(userId)) {
             throw new BookingAccessDeniedException("Доступ к бронированию запрещен");
@@ -88,7 +86,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingDto> findAllByBooker(Long userId, BookingStatus state) {
-        userService.findById(userId); // Проверяем существование пользователя
+        userService.findById(userId);
         LocalDateTime now = LocalDateTime.now();
         PageRequest pageRequest = PageRequest.of(0, Integer.MAX_VALUE, Sort.by("start").descending());
         List<Booking> bookings;
@@ -122,7 +120,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingDto> findAllByOwner(Long userId, BookingStatus state) {
-        userService.findById(userId); // Проверяем существование пользователя
+        userService.findById(userId);
         LocalDateTime now = LocalDateTime.now();
         PageRequest pageRequest = PageRequest.of(0, Integer.MAX_VALUE, Sort.by("start").descending());
         List<Booking> bookings;
@@ -151,10 +149,5 @@ public class BookingServiceImpl implements BookingService {
         return bookings.stream()
                 .map(BookingMapper::toBookingDto)
                 .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<BookingDto> findAllByUser(Long userId, BookingStatus state) {
-        return findAllByBooker(userId, state);
     }
 }

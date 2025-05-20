@@ -40,24 +40,12 @@ public class ItemController {
 
     @GetMapping("/{itemId}")
     public ItemDto findById(@PathVariable Long itemId, @RequestHeader("X-Sharer-User-Id") Long userId) {
-        ItemDto itemDto = ItemMapper.toItemDto(itemService.findById(itemId));
-        itemDto.setComments(itemService.getItemComments(itemId));
-        itemDto.setLastBooking(itemService.getLastBooking(itemId, userId));
-        itemDto.setNextBooking(itemService.getNextBooking(itemId, userId));
-        return itemDto;
+        return itemService.getEnrichedItemDto(itemId, userId);
     }
 
     @GetMapping
     public List<ItemDto> findAllByUser(@RequestHeader("X-Sharer-User-Id") Long userId) {
-        return itemService.findAllByUser(userId).stream()
-                .map(item -> {
-                    ItemDto itemDto = ItemMapper.toItemDto(item);
-                    itemDto.setComments(itemService.getItemComments(item.getId()));
-                    itemDto.setLastBooking(itemService.getLastBooking(item.getId(), userId));
-                    itemDto.setNextBooking(itemService.getNextBooking(item.getId(), userId));
-                    return itemDto;
-                })
-                .collect(Collectors.toList());
+        return itemService.findAllEnrichedByUser(userId);
     }
 
     @PatchMapping("/{itemId}")
