@@ -153,17 +153,17 @@ class BookingServiceImplTest {
     @Test
     void findAllByBooker_WithDifferentStates_ShouldReturnFilteredBookings() {
         LocalDateTime now = LocalDateTime.now();
-        Booking currentBooking = new Booking(1L, 
-            now.minusHours(1),
-            now.plusHours(1),
-            item, 
-            booker, 
-            BookingStatus.APPROVED);
-        
+        Booking currentBooking = new Booking(1L,
+                now.minusHours(1),
+                now.plusHours(1),
+                item,
+                booker,
+                BookingStatus.APPROVED);
+
         List<Booking> currentBookings = List.of(currentBooking);
         when(userService.findById(2L)).thenReturn(new UserDto(2L, "Booker", "booker@test.com"));
         when(bookingRepository.findByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(
-                eq(2L), 
+                eq(2L),
                 any(LocalDateTime.class),
                 any(LocalDateTime.class),
                 any()))
@@ -174,9 +174,9 @@ class BookingServiceImplTest {
         assertEquals(1, result.size());
         assertEquals(1L, result.get(0).getId());
         verify(bookingRepository).findByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(
-            eq(2L), 
-            any(LocalDateTime.class),
-            any(LocalDateTime.class),
-            any());
+                eq(2L),
+                any(LocalDateTime.class),
+                any(LocalDateTime.class),
+                any());
     }
-} 
+}
