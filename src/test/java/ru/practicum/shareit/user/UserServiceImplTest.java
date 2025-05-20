@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class UserServiceImplTest {
     private UserService userService;
-    private UserRepository userRepository;
+    private UserRepositoryOld userRepository;
 
     @BeforeEach
     void setUp() {
