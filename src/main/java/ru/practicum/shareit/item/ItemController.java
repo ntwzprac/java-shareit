@@ -3,6 +3,7 @@ package ru.practicum.shareit.item;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemCreateDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemUpdateDto;
@@ -29,16 +30,22 @@ public class ItemController {
         return ItemMapper.toItemDto(itemService.create(ItemMapper.toItem(item), userId));
     }
 
+    @PostMapping("/{itemId}/comment")
+    public CommentDto addComment(
+            @PathVariable Long itemId,
+            @RequestHeader("X-Sharer-User-Id") Long userId,
+            @Valid @RequestBody CommentDto commentDto) {
+        return itemService.addComment(itemId, userId, commentDto);
+    }
+
     @GetMapping("/{itemId}")
-    public ItemDto findById(@PathVariable Long itemId) {
-        return ItemMapper.toItemDto(itemService.findById(itemId));
+    public ItemDto findById(@PathVariable Long itemId, @RequestHeader("X-Sharer-User-Id") Long userId) {
+        return itemService.getEnrichedItemDto(itemId, userId);
     }
 
     @GetMapping
     public List<ItemDto> findAllByUser(@RequestHeader("X-Sharer-User-Id") Long userId) {
-        return itemService.findAllByUser(userId).stream()
-                .map(ItemMapper::toItemDto)
-                .toList();
+        return itemService.findAllEnrichedByUser(userId);
     }
 
     @PatchMapping("/{itemId}")

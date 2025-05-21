@@ -9,7 +9,6 @@ import ru.practicum.shareit.user.exception.EmailAlreadyUsedException;
 import ru.practicum.shareit.user.exception.UserNotFoundException;
 import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.UserRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,7 +31,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto update(Long userId, UserUpdateDto userUpdateDto) {
-        User existingUser = userRepository.findById(userId);
+        User existingUser = userRepository.getUserById(userId);
         if (existingUser == null) {
             throw new UserNotFoundException(String.format("Пользователь с id %d не найден", userId));
         }
@@ -54,7 +53,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto findById(Long id) {
-        User user = userRepository.findById(id);
+        User user = userRepository.getUserById(id);
         if (user == null) {
             throw new UserNotFoundException(String.format("Пользователь с id %d не найден", id));
         }
@@ -70,10 +69,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void delete(Long userId) {
-        User user = userRepository.findById(userId);
+        User user = userRepository.getUserById(userId);
         if (user == null) {
             throw new UserNotFoundException(String.format("Пользователь с id %d не найден", userId));
         }
-        userRepository.delete(userId);
+        userRepository.delete(user);
     }
 }
