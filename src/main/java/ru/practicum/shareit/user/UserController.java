@@ -9,9 +9,6 @@ import ru.practicum.shareit.user.dto.UserUpdateDto;
 import jakarta.validation.Valid;
 import java.util.List;
 
-/**
- * TODO Sprint add-controllers.
- */
 @RestController
 @RequestMapping(path = "/users")
 @RequiredArgsConstructor

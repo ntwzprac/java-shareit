@@ -12,9 +12,6 @@ import ru.practicum.shareit.item.mapper.ItemMapper;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * TODO Sprint add-controllers.
- */
 @RestController
 @RequestMapping("/items")
 public class ItemController {
