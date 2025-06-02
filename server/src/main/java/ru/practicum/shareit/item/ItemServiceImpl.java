@@ -68,12 +68,12 @@ public class ItemServiceImpl implements ItemService {
     public Item create(Item item, Long userId) {
         User user = getUserOrThrow(userId);
         item.setOwner(user);
-        
+
         if (item.getRequest() != null && item.getRequest().getId() != null) {
             ItemRequest request = getRequestOrThrow(item.getRequest().getId());
             item.setRequest(request);
         }
-        
+
         return itemRepository.save(item);
     }
 

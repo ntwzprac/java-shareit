@@ -2,6 +2,8 @@ package ru.practicum.shareit.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import ru.practicum.shareit.booking.exceptions.BookingAccessDeniedException;
@@ -89,5 +91,16 @@ public class GlobalExceptionHandler {
         Map<String, String> response = new HashMap<>();
         response.put("Ошибка: ", ex.getMessage());
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        Map<String, String> response = new HashMap<>();
+        String errorMessage = ex.getBindingResult().getAllErrors().stream()
+                .map(error -> ((FieldError) error).getDefaultMessage())
+                .findFirst()
+                .orElse("Ошибка валидации");
+        response.put("error", errorMessage);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 }
