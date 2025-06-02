@@ -26,4 +26,6 @@ public interface ItemService {
     ItemDto getEnrichedItemDto(Long itemId, Long userId);
 
     List<ItemDto> findAllEnrichedByUser(Long userId);
+    
+    List<Item> findAllByRequestId(Long requestId);
 }

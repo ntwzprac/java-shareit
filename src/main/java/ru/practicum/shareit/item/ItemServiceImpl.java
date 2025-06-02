@@ -233,4 +233,9 @@ public class ItemServiceImpl implements ItemService {
 
         return itemDto;
     }
+
+    @Override
+    public List<Item> findAllByRequestId(Long requestId) {
+        return itemRepository.findAllByRequestId(requestId);
+    }
 }
