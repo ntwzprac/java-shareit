@@ -19,6 +19,9 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserService;
 import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.request.ItemRequestRepository;
+import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.request.exceptions.NotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -37,6 +40,7 @@ public class ItemServiceImpl implements ItemService {
     private final BookingValidationService bookingValidationService;
     private final CommentMapper commentMapper;
     private final BookingRepository bookingRepository;
+    private final ItemRequestRepository requestRepository;
 
     private User getUserOrThrow(Long userId) {
         return UserMapper.toUser(userService.findById(userId));
@@ -55,10 +59,21 @@ public class ItemServiceImpl implements ItemService {
         }
     }
 
+    private ItemRequest getRequestOrThrow(Long requestId) {
+        return requestRepository.findById(requestId)
+                .orElseThrow(() -> new NotFoundException(String.format("Запрос с id %d не найден", requestId)));
+    }
+
     @Override
     public Item create(Item item, Long userId) {
         User user = getUserOrThrow(userId);
         item.setOwner(user);
+        
+        if (item.getRequest() != null && item.getRequest().getId() != null) {
+            ItemRequest request = getRequestOrThrow(item.getRequest().getId());
+            item.setRequest(request);
+        }
+        
         return itemRepository.save(item);
     }
 
