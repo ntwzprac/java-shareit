@@ -6,7 +6,6 @@ import ru.practicum.shareit.user.dto.UserCreateDto;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserUpdateDto;
 
-import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -16,12 +15,12 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public UserDto create(@Valid @RequestBody UserCreateDto userCreateDto) {
+    public UserDto create(@RequestBody UserCreateDto userCreateDto) {
         return userService.create(userCreateDto);
     }
 
     @PatchMapping("/{userId}")
-    public UserDto update(@PathVariable Long userId, @Valid @RequestBody UserUpdateDto userUpdateDto) {
+    public UserDto update(@PathVariable Long userId, @RequestBody UserUpdateDto userUpdateDto) {
         return userService.update(userId, userUpdateDto);
     }
 

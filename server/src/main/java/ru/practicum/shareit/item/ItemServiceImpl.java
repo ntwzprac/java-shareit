@@ -129,6 +129,16 @@ public class ItemServiceImpl implements ItemService {
             );
         }
 
+        boolean hasCompletedBooking = bookingRepository.findAllByItemIdAndBookerId(itemId, userId).stream()
+                .anyMatch(booking -> booking.getStatus() == BookingStatus.APPROVED && 
+                        booking.getEnd().isBefore(LocalDateTime.now()));
+
+        if (!hasCompletedBooking) {
+            throw new CommentNotAllowedException(
+                    String.format("Пользователь с id %d не может оставить комментарий к предмету с id %d, так как не имеет завершенного бронирования", userId, itemId)
+            );
+        }
+
         Comment comment = commentMapper.toComment(commentDto);
         comment.setItem(item);
         comment.setAuthor(user);
