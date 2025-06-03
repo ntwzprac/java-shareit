@@ -47,21 +47,17 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private Item getItemOrThrow(Long itemId) {
-        return itemRepository.findById(itemId)
-                .orElseThrow(() -> new ItemNotFoundException(String.format("Предмет с id %d не найден", itemId)));
+        return itemRepository.findById(itemId).orElseThrow(() -> new ItemNotFoundException(String.format("Предмет с id %d не найден", itemId)));
     }
 
     private void checkItemOwnership(Item item, Long userId) {
         if (!item.getOwner().getId().equals(userId)) {
-            throw new ItemAccessDeniedException(
-                    String.format("Пользователь с id %d не является владельцем предмета с id %d", userId, item.getId())
-            );
+            throw new ItemAccessDeniedException(String.format("Пользователь с id %d не является владельцем предмета с id %d", userId, item.getId()));
         }
     }
 
     private ItemRequest getRequestOrThrow(Long requestId) {
-        return requestRepository.findById(requestId)
-                .orElseThrow(() -> new NotFoundException(String.format("Запрос с id %d не найден", requestId)));
+        return requestRepository.findById(requestId).orElseThrow(() -> new NotFoundException(String.format("Запрос с id %d не найден", requestId)));
     }
 
     @Override
@@ -124,19 +120,13 @@ public class ItemServiceImpl implements ItemService {
         User user = getUserOrThrow(userId);
 
         if (!bookingValidationService.hasUserBookedItem(userId, itemId)) {
-            throw new CommentNotAllowedException(
-                    String.format("Пользователь с id %d не может оставить комментарий к предмету с id %d", userId, itemId)
-            );
+            throw new CommentNotAllowedException(String.format("Пользователь с id %d не может оставить комментарий к предмету с id %d", userId, itemId));
         }
 
-        boolean hasCompletedBooking = bookingRepository.findAllByItemIdAndBookerId(itemId, userId).stream()
-                .anyMatch(booking -> booking.getStatus() == BookingStatus.APPROVED && 
-                        booking.getEnd().isBefore(LocalDateTime.now()));
+        boolean hasCompletedBooking = bookingRepository.findAllByItemIdAndBookerId(itemId, userId).stream().anyMatch(booking -> booking.getStatus() == BookingStatus.APPROVED && booking.getEnd().isBefore(LocalDateTime.now()));
 
         if (!hasCompletedBooking) {
-            throw new CommentNotAllowedException(
-                    String.format("Пользователь с id %d не может оставить комментарий к предмету с id %d, так как не имеет завершенного бронирования", userId, itemId)
-            );
+            throw new CommentNotAllowedException(String.format("Пользователь с id %d не может оставить комментарий к предмету с id %d, так как не имеет завершенного бронирования", userId, itemId));
         }
 
         Comment comment = commentMapper.toComment(commentDto);
@@ -150,9 +140,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<CommentDto> getItemComments(Long itemId) {
         getItemOrThrow(itemId);
-        return commentRepository.findAllByItemId(itemId).stream()
-                .map(commentMapper::toDto)
-                .collect(Collectors.toList());
+        return commentRepository.findAllByItemId(itemId).stream().map(commentMapper::toDto).collect(Collectors.toList());
     }
 
     private Map<Long, List<Booking>> getBookingsForItems(List<Long> itemIds, Long userId) {
@@ -160,19 +148,15 @@ public class ItemServiceImpl implements ItemService {
             return Map.of();
         }
 
-        List<Booking> bookings = bookingRepository.findAllByItemIdsAndStatusOrderByStartAsc(
-                itemIds, BookingStatus.APPROVED);
+        List<Booking> bookings = bookingRepository.findAllByItemIdsAndStatusOrderByStartAsc(itemIds, BookingStatus.APPROVED);
 
         LocalDateTime now = LocalDateTime.now();
-        Map<Long, List<Booking>> bookingsByItem = bookings.stream()
-                .collect(Collectors.groupingBy(booking -> booking.getItem().getId()));
+        Map<Long, List<Booking>> bookingsByItem = bookings.stream().collect(Collectors.groupingBy(booking -> booking.getItem().getId()));
 
         Map<Long, List<Booking>> result = new HashMap<>();
         for (Long itemId : itemIds) {
             List<Booking> itemBookings = bookingsByItem.getOrDefault(itemId, List.of());
-            result.put(itemId, itemBookings.stream()
-                    .filter(booking -> booking.getStart().isAfter(now))
-                    .collect(Collectors.toList()));
+            result.put(itemId, itemBookings.stream().filter(booking -> booking.getStart().isAfter(now)).collect(Collectors.toList()));
         }
         return result;
     }
@@ -181,8 +165,7 @@ public class ItemServiceImpl implements ItemService {
         if (itemIds.isEmpty()) {
             return Map.of();
         }
-        return commentRepository.findAllByItemIdIn(itemIds).stream()
-                .collect(Collectors.groupingBy(comment -> comment.getItem().getId()));
+        return commentRepository.findAllByItemIdIn(itemIds).stream().collect(Collectors.groupingBy(comment -> comment.getItem().getId()));
     }
 
     @Override
@@ -192,39 +175,29 @@ public class ItemServiceImpl implements ItemService {
             return List.of();
         }
 
-        List<Long> itemIds = items.stream()
-                .map(Item::getId)
-                .collect(Collectors.toList());
+        List<Long> itemIds = items.stream().map(Item::getId).collect(Collectors.toList());
 
         Map<Long, List<Booking>> bookingsByItem = getBookingsForItems(itemIds, userId);
         Map<Long, List<Comment>> commentsByItem = getCommentsForItems(itemIds);
 
-        return items.stream()
-                .map(item -> {
-                    ItemDto itemDto = ItemMapper.toItemDto(item);
+        return items.stream().map(item -> {
+            ItemDto itemDto = ItemMapper.toItemDto(item);
 
-                    List<Booking> itemBookings = bookingsByItem.getOrDefault(item.getId(), List.of());
-                    LocalDateTime now = LocalDateTime.now();
+            List<Booking> itemBookings = bookingsByItem.getOrDefault(item.getId(), List.of());
+            LocalDateTime now = LocalDateTime.now();
 
-                    Optional<Booking> lastBooking = itemBookings.stream()
-                            .filter(booking -> booking.getEnd().isBefore(now))
-                            .max(Comparator.comparing(Booking::getEnd));
+            Optional<Booking> lastBooking = itemBookings.stream().filter(booking -> booking.getEnd().isBefore(now)).max(Comparator.comparing(Booking::getEnd));
 
-                    Optional<Booking> nextBooking = itemBookings.stream()
-                            .filter(booking -> booking.getStart().isAfter(now))
-                            .min(Comparator.comparing(Booking::getStart));
+            Optional<Booking> nextBooking = itemBookings.stream().filter(booking -> booking.getStart().isAfter(now)).min(Comparator.comparing(Booking::getStart));
 
-                    itemDto.setLastBooking(lastBooking.map(BookingMapper::toBookingDto).orElse(null));
-                    itemDto.setNextBooking(nextBooking.map(BookingMapper::toBookingDto).orElse(null));
+            itemDto.setLastBooking(lastBooking.map(BookingMapper::toBookingDto).orElse(null));
+            itemDto.setNextBooking(nextBooking.map(BookingMapper::toBookingDto).orElse(null));
 
-                    List<CommentDto> comments = commentsByItem.getOrDefault(item.getId(), List.of()).stream()
-                            .map(commentMapper::toDto)
-                            .collect(Collectors.toList());
-                    itemDto.setComments(comments);
+            List<CommentDto> comments = commentsByItem.getOrDefault(item.getId(), List.of()).stream().map(commentMapper::toDto).collect(Collectors.toList());
+            itemDto.setComments(comments);
 
-                    return itemDto;
-                })
-                .collect(Collectors.toList());
+            return itemDto;
+        }).collect(Collectors.toList());
     }
 
     @Override
@@ -240,20 +213,14 @@ public class ItemServiceImpl implements ItemService {
         List<Booking> itemBookings = bookingsByItem.getOrDefault(itemId, List.of());
         LocalDateTime now = LocalDateTime.now();
 
-        Optional<Booking> lastBooking = itemBookings.stream()
-                .filter(booking -> booking.getEnd().isBefore(now))
-                .max(Comparator.comparing(Booking::getEnd));
+        Optional<Booking> lastBooking = itemBookings.stream().filter(booking -> booking.getEnd().isBefore(now)).max(Comparator.comparing(Booking::getEnd));
 
-        Optional<Booking> nextBooking = itemBookings.stream()
-                .filter(booking -> booking.getStart().isAfter(now))
-                .min(Comparator.comparing(Booking::getStart));
+        Optional<Booking> nextBooking = itemBookings.stream().filter(booking -> booking.getStart().isAfter(now)).min(Comparator.comparing(Booking::getStart));
 
         itemDto.setLastBooking(lastBooking.map(BookingMapper::toBookingDto).orElse(null));
         itemDto.setNextBooking(nextBooking.map(BookingMapper::toBookingDto).orElse(null));
 
-        List<CommentDto> comments = commentsByItem.getOrDefault(itemId, List.of()).stream()
-                .map(commentMapper::toDto)
-                .collect(Collectors.toList());
+        List<CommentDto> comments = commentsByItem.getOrDefault(itemId, List.of()).stream().map(commentMapper::toDto).collect(Collectors.toList());
         itemDto.setComments(comments);
 
         return itemDto;
