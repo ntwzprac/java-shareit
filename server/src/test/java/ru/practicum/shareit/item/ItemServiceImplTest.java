@@ -418,8 +418,8 @@ class ItemServiceImplTest {
 
         CommentDto commentDto = new CommentDto();
         commentDto.setText("Test Comment");
-        assertThrows(CommentNotAllowedException.class, () -> 
-            itemService.addComment(1L, 1L, commentDto)
+        assertThrows(CommentNotAllowedException.class, () ->
+                itemService.addComment(1L, 1L, commentDto)
         );
     }
 
@@ -429,8 +429,8 @@ class ItemServiceImplTest {
 
         CommentDto commentDto = new CommentDto();
         commentDto.setText("Test Comment");
-        assertThrows(ItemNotFoundException.class, () -> 
-            itemService.addComment(1L, 1L, commentDto)
+        assertThrows(ItemNotFoundException.class, () ->
+                itemService.addComment(1L, 1L, commentDto)
         );
     }
 
@@ -444,8 +444,8 @@ class ItemServiceImplTest {
 
         CommentDto commentDto = new CommentDto();
         commentDto.setText("Test Comment");
-        assertThrows(CommentNotAllowedException.class, () -> 
-            itemService.addComment(1L, 1L, commentDto)
+        assertThrows(CommentNotAllowedException.class, () ->
+                itemService.addComment(1L, 1L, commentDto)
         );
     }
 

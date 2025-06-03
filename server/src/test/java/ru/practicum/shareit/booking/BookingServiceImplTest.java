@@ -276,8 +276,8 @@ class BookingServiceImplTest {
 
         BookingCreateDto bookingCreateDto = new BookingCreateDto(1L, LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(2));
 
-        assertThrows(ItemUnavailableException.class, () -> 
-            bookingService.create(bookingCreateDto, 2L)
+        assertThrows(ItemUnavailableException.class, () ->
+                bookingService.create(bookingCreateDto, 2L)
         );
     }
 
@@ -288,8 +288,8 @@ class BookingServiceImplTest {
 
         BookingCreateDto bookingCreateDto = new BookingCreateDto(1L, LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(2));
 
-        assertThrows(BookingAccessDeniedException.class, () -> 
-            bookingService.create(bookingCreateDto, owner.getId())
+        assertThrows(BookingAccessDeniedException.class, () ->
+                bookingService.create(bookingCreateDto, owner.getId())
         );
     }
 
@@ -300,8 +300,8 @@ class BookingServiceImplTest {
 
         BookingCreateDto bookingCreateDto = new BookingCreateDto(1L, LocalDateTime.now().minusDays(1), LocalDateTime.now().plusDays(1));
 
-        assertThrows(IllegalArgumentException.class, () -> 
-            bookingService.create(bookingCreateDto, 3L)
+        assertThrows(IllegalArgumentException.class, () ->
+                bookingService.create(bookingCreateDto, 3L)
         );
     }
 
@@ -312,8 +312,8 @@ class BookingServiceImplTest {
 
         BookingCreateDto bookingCreateDto = new BookingCreateDto(1L, LocalDateTime.now().plusDays(2), LocalDateTime.now().plusDays(1));
 
-        assertThrows(IllegalArgumentException.class, () -> 
-            bookingService.create(bookingCreateDto, 3L)
+        assertThrows(IllegalArgumentException.class, () ->
+                bookingService.create(bookingCreateDto, 3L)
         );
     }
 
@@ -321,8 +321,8 @@ class BookingServiceImplTest {
     void approve_WhenBookingNotFound_ShouldThrowException() {
         when(bookingRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        assertThrows(BookingNotFoundException.class, () -> 
-            bookingService.approve(1L, 1L, true)
+        assertThrows(BookingNotFoundException.class, () ->
+                bookingService.approve(1L, 1L, true)
         );
     }
 
@@ -338,8 +338,8 @@ class BookingServiceImplTest {
 
         when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(existingBooking));
 
-        assertThrows(BookingAccessDeniedException.class, () -> 
-            bookingService.approve(1L, 3L, true)
+        assertThrows(BookingAccessDeniedException.class, () ->
+                bookingService.approve(1L, 3L, true)
         );
     }
 
@@ -355,8 +355,8 @@ class BookingServiceImplTest {
 
         when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(existingBooking));
 
-        assertThrows(BookingStatusException.class, () -> 
-            bookingService.approve(1L, owner.getId(), true)
+        assertThrows(BookingStatusException.class, () ->
+                bookingService.approve(1L, owner.getId(), true)
         );
     }
 }

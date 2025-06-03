@@ -198,11 +198,11 @@ class ItemRequestServiceImplTest {
 
     @Test
     void getAllRequests_WithInvalidPagination_ShouldThrowException() {
-        assertThrows(IllegalArgumentException.class, () -> 
-            itemRequestService.getAllRequests(1L, -1, 2)
+        assertThrows(IllegalArgumentException.class, () ->
+                itemRequestService.getAllRequests(1L, -1, 2)
         );
-        assertThrows(IllegalArgumentException.class, () -> 
-            itemRequestService.getAllRequests(1L, 0, 0)
+        assertThrows(IllegalArgumentException.class, () ->
+                itemRequestService.getAllRequests(1L, 0, 0)
         );
     }
 }
