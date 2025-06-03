@@ -387,4 +387,79 @@ class ItemServiceImplTest {
         assertEquals(1, result.size());
         assertTrue(result.get(0).getComments().isEmpty());
     }
+
+    @Test
+    void addComment_WhenUserHasBookedItem_ShouldAddComment() {
+        UserDto userDto = new UserDto(1L, "Test User", "test@test.com");
+        when(userService.findById(anyLong())).thenReturn(userDto);
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
+        when(bookingValidationService.hasUserBookedItem(anyLong(), anyLong())).thenReturn(true);
+        when(bookingRepository.findAllByItemIdAndBookerId(anyLong(), anyLong())).thenReturn(List.of(booking));
+        when(commentMapper.toComment(any(CommentDto.class))).thenReturn(comment);
+        when(commentRepository.save(any())).thenReturn(comment);
+        when(commentMapper.toDto(any())).thenReturn(commentDto);
+
+        CommentDto inputCommentDto = new CommentDto();
+        inputCommentDto.setText("Test Comment");
+        CommentDto result = itemService.addComment(1L, 1L, inputCommentDto);
+
+        assertNotNull(result);
+        assertEquals(commentDto.getId(), result.getId());
+        assertEquals(commentDto.getText(), result.getText());
+        verify(commentRepository).save(any());
+    }
+
+    @Test
+    void addComment_WhenUserHasNotBookedItem_ShouldThrowException() {
+        UserDto userDto = new UserDto(1L, "Test User", "test@test.com");
+        when(userService.findById(anyLong())).thenReturn(userDto);
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
+        when(bookingValidationService.hasUserBookedItem(anyLong(), anyLong())).thenReturn(false);
+
+        CommentDto commentDto = new CommentDto();
+        commentDto.setText("Test Comment");
+        assertThrows(CommentNotAllowedException.class, () -> 
+            itemService.addComment(1L, 1L, commentDto)
+        );
+    }
+
+    @Test
+    void addComment_WhenItemNotFound_ShouldThrowException() {
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        CommentDto commentDto = new CommentDto();
+        commentDto.setText("Test Comment");
+        assertThrows(ItemNotFoundException.class, () -> 
+            itemService.addComment(1L, 1L, commentDto)
+        );
+    }
+
+    @Test
+    void addComment_WhenNoCompletedBooking_ShouldThrowException() {
+        UserDto userDto = new UserDto(1L, "Test User", "test@test.com");
+        when(userService.findById(anyLong())).thenReturn(userDto);
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
+        when(bookingValidationService.hasUserBookedItem(anyLong(), anyLong())).thenReturn(true);
+        when(bookingRepository.findAllByItemIdAndBookerId(anyLong(), anyLong())).thenReturn(List.of());
+
+        CommentDto commentDto = new CommentDto();
+        commentDto.setText("Test Comment");
+        assertThrows(CommentNotAllowedException.class, () -> 
+            itemService.addComment(1L, 1L, commentDto)
+        );
+    }
+
+    @Test
+    void getComments_ShouldReturnAllCommentsForItem() {
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
+        when(commentRepository.findAllByItemId(anyLong())).thenReturn(List.of(comment));
+        when(commentMapper.toDto(any())).thenReturn(commentDto);
+
+        List<CommentDto> result = itemService.getItemComments(1L);
+
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
+        assertEquals(1, result.size());
+        assertEquals(commentDto.getId(), result.get(0).getId());
+    }
 }

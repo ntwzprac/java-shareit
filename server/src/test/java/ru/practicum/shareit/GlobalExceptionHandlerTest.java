@@ -151,4 +151,53 @@ class GlobalExceptionHandlerTest {
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertEquals("Invalid argument", response.getBody().get("Ошибка: "));
     }
+
+    @Test
+    void handleMethodArgumentNotValidException_ShouldReturnBadRequest() {
+        MethodArgumentNotValidException ex = mock(MethodArgumentNotValidException.class);
+        BindingResult bindingResult = mock(BindingResult.class);
+        FieldError fieldError = new FieldError("object", "field", "default message");
+
+        when(ex.getBindingResult()).thenReturn(bindingResult);
+        when(bindingResult.getFieldErrors()).thenReturn(List.of(fieldError));
+
+        ResponseEntity<Map<String, String>> response = handler.handleValidationExceptions(ex);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().containsKey("error"));
+    }
+
+    @Test
+    void handleItemUnavailableException_ShouldReturnBadRequest() {
+        ItemUnavailableException ex = new ItemUnavailableException("Item is not available");
+
+        ResponseEntity<Map<String, String>> response = handler.handleItemUnavailableException(ex);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().containsValue("Item is not available"));
+    }
+
+    @Test
+    void handleCommentNotAllowedException_ShouldReturnBadRequest() {
+        CommentNotAllowedException ex = new CommentNotAllowedException("Comment not allowed");
+
+        ResponseEntity<Map<String, String>> response = handler.handleCommentNotAllowedException(ex);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().containsValue("Comment not allowed"));
+    }
+
+    @Test
+    void handleBookingStatusException_ShouldReturnBadRequest() {
+        BookingStatusException ex = new BookingStatusException("Invalid booking status");
+
+        ResponseEntity<Map<String, String>> response = handler.handleBookingStatusException(ex);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().containsValue("Invalid booking status"));
+    }
 }

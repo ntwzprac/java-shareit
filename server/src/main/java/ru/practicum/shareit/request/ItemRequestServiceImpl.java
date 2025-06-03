@@ -54,6 +54,10 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Override
     public List<ItemRequestDto> getAllRequests(Long userId, Integer from, Integer size) {
+        if (from < 0 || size <= 0) {
+            throw new IllegalArgumentException("Параметры пагинации некорректны");
+        }
+
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
 

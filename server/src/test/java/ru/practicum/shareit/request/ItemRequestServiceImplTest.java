@@ -153,4 +153,56 @@ class ItemRequestServiceImplTest {
                 itemRequestService.getRequestById(user.getId(), 999L)
         );
     }
+
+    @Test
+    void getAllRequests_WithPagination_ShouldReturnPaginatedResults() {
+        User user1 = new User(1L, "User 1", "user1@test.com");
+        User user2 = new User(2L, "User 2", "user2@test.com");
+        ItemRequest request1 = ItemRequest.builder()
+                .id(1L)
+                .description("Request 1")
+                .requester(user2)
+                .created(LocalDateTime.now().minusDays(1))
+                .build();
+        ItemRequest request2 = ItemRequest.builder()
+                .id(2L)
+                .description("Request 2")
+                .requester(user2)
+                .created(LocalDateTime.now())
+                .build();
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user1));
+        when(requestRepository.findAllByRequesterIdNotOrderByCreatedDesc(eq(1L), any(PageRequest.class)))
+                .thenReturn(List.of(request2, request1));
+
+        List<ItemRequestDto> result = itemRequestService.getAllRequests(1L, 0, 2);
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals(request2.getId(), result.get(0).getId());
+        assertEquals(request1.getId(), result.get(1).getId());
+    }
+
+    @Test
+    void getAllRequests_WithEmptyPage_ShouldReturnEmptyList() {
+        User user = new User(1L, "Test User", "test@test.com");
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(requestRepository.findAllByRequesterIdNotOrderByCreatedDesc(eq(1L), any(PageRequest.class)))
+                .thenReturn(List.of());
+
+        List<ItemRequestDto> result = itemRequestService.getAllRequests(1L, 0, 2);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void getAllRequests_WithInvalidPagination_ShouldThrowException() {
+        assertThrows(IllegalArgumentException.class, () -> 
+            itemRequestService.getAllRequests(1L, -1, 2)
+        );
+        assertThrows(IllegalArgumentException.class, () -> 
+            itemRequestService.getAllRequests(1L, 0, 0)
+        );
+    }
 }

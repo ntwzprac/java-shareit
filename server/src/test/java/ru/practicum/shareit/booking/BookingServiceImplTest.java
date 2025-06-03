@@ -11,6 +11,7 @@ import ru.practicum.shareit.booking.dto.BookingCreateDto;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.exceptions.BookingAccessDeniedException;
 import ru.practicum.shareit.booking.exceptions.BookingNotFoundException;
+import ru.practicum.shareit.booking.exceptions.BookingStatusException;
 import ru.practicum.shareit.booking.exceptions.ItemUnavailableException;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
@@ -264,6 +265,98 @@ class BookingServiceImplTest {
 
         assertThrows(BookingAccessDeniedException.class, () ->
                 bookingService.findById(booking.getId(), 999L)
+        );
+    }
+
+    @Test
+    void create_WhenItemUnavailable_ShouldThrowException() {
+        Item item = new Item(1L, "Test Item", "Test Description", false, owner, null);
+        when(itemService.findById(anyLong())).thenReturn(item);
+        when(userService.findById(anyLong())).thenReturn(userDto);
+
+        BookingCreateDto bookingCreateDto = new BookingCreateDto(1L, LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(2));
+
+        assertThrows(ItemUnavailableException.class, () -> 
+            bookingService.create(bookingCreateDto, 2L)
+        );
+    }
+
+    @Test
+    void create_WhenOwnerTriesToBook_ShouldThrowException() {
+        when(itemService.findById(anyLong())).thenReturn(item);
+        when(userService.findById(anyLong())).thenReturn(new UserDto(owner.getId(), owner.getName(), owner.getEmail()));
+
+        BookingCreateDto bookingCreateDto = new BookingCreateDto(1L, LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(2));
+
+        assertThrows(BookingAccessDeniedException.class, () -> 
+            bookingService.create(bookingCreateDto, owner.getId())
+        );
+    }
+
+    @Test
+    void create_WhenStartDateInPast_ShouldThrowException() {
+        when(itemService.findById(anyLong())).thenReturn(item);
+        when(userService.findById(anyLong())).thenReturn(new UserDto(3L, "Other User", "other@test.com"));
+
+        BookingCreateDto bookingCreateDto = new BookingCreateDto(1L, LocalDateTime.now().minusDays(1), LocalDateTime.now().plusDays(1));
+
+        assertThrows(IllegalArgumentException.class, () -> 
+            bookingService.create(bookingCreateDto, 3L)
+        );
+    }
+
+    @Test
+    void create_WhenEndDateBeforeStartDate_ShouldThrowException() {
+        when(itemService.findById(anyLong())).thenReturn(item);
+        when(userService.findById(anyLong())).thenReturn(new UserDto(3L, "Other User", "other@test.com"));
+
+        BookingCreateDto bookingCreateDto = new BookingCreateDto(1L, LocalDateTime.now().plusDays(2), LocalDateTime.now().plusDays(1));
+
+        assertThrows(IllegalArgumentException.class, () -> 
+            bookingService.create(bookingCreateDto, 3L)
+        );
+    }
+
+    @Test
+    void approve_WhenBookingNotFound_ShouldThrowException() {
+        when(bookingRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        assertThrows(BookingNotFoundException.class, () -> 
+            bookingService.approve(1L, 1L, true)
+        );
+    }
+
+    @Test
+    void approve_WhenNotOwner_ShouldThrowException() {
+        Booking existingBooking = new Booking();
+        existingBooking.setId(1L);
+        existingBooking.setItem(item);
+        existingBooking.setBooker(user);
+        existingBooking.setStatus(BookingStatus.WAITING);
+        existingBooking.setStart(LocalDateTime.now().plusDays(1));
+        existingBooking.setEnd(LocalDateTime.now().plusDays(2));
+
+        when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(existingBooking));
+
+        assertThrows(BookingAccessDeniedException.class, () -> 
+            bookingService.approve(1L, 3L, true)
+        );
+    }
+
+    @Test
+    void approve_WhenAlreadyApproved_ShouldThrowException() {
+        Booking existingBooking = new Booking();
+        existingBooking.setId(1L);
+        existingBooking.setItem(item);
+        existingBooking.setBooker(user);
+        existingBooking.setStatus(BookingStatus.APPROVED);
+        existingBooking.setStart(LocalDateTime.now().plusDays(1));
+        existingBooking.setEnd(LocalDateTime.now().plusDays(2));
+
+        when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(existingBooking));
+
+        assertThrows(BookingStatusException.class, () -> 
+            bookingService.approve(1L, owner.getId(), true)
         );
     }
 }
