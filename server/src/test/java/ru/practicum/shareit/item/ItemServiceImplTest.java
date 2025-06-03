@@ -312,4 +312,79 @@ class ItemServiceImplTest {
         assertEquals(item.getDescription(), result.get(0).getDescription());
         assertEquals(item.getAvailable(), result.get(0).getAvailable());
     }
+
+    @Test
+    void findAllByRequestId_ShouldReturnEmptyList_WhenNoItemsFound() {
+        when(itemRepository.findAllByRequestId(anyLong())).thenReturn(List.of());
+
+        List<Item> result = itemService.findAllByRequestId(1L);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void getEnrichedItemDto_ShouldReturnItemDtoWithNoBookings_WhenNoBookingsFound() {
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
+        when(bookingRepository.findAllByItemIdsAndStatusOrderByStartAsc(anyList(), any())).thenReturn(List.of());
+        when(commentRepository.findAllByItemIdIn(anyList())).thenReturn(List.of());
+
+        ItemDto result = itemService.getEnrichedItemDto(item.getId(), user.getId());
+
+        assertNotNull(result);
+        assertNull(result.getLastBooking());
+        assertNull(result.getNextBooking());
+    }
+
+    @Test
+    void getEnrichedItemDto_ShouldReturnItemDtoWithNoComments_WhenNoCommentsFound() {
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
+        when(bookingRepository.findAllByItemIdsAndStatusOrderByStartAsc(anyList(), any())).thenReturn(List.of(booking));
+        when(commentRepository.findAllByItemIdIn(anyList())).thenReturn(List.of());
+
+        ItemDto result = itemService.getEnrichedItemDto(item.getId(), user.getId());
+
+        assertNotNull(result);
+        assertTrue(result.getComments().isEmpty());
+    }
+
+    @Test
+    void findAllEnrichedByUser_ShouldReturnEmptyList_WhenNoItemsFound() {
+        when(userService.findById(anyLong())).thenReturn(new UserDto(user.getId(), user.getName(), user.getEmail()));
+        when(itemRepository.findAllByOwnerId(anyLong())).thenReturn(List.of());
+
+        List<ItemDto> result = itemService.findAllEnrichedByUser(user.getId());
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void findAllEnrichedByUser_ShouldReturnItemsWithNoBookings_WhenNoBookingsFound() {
+        when(userService.findById(anyLong())).thenReturn(new UserDto(user.getId(), user.getName(), user.getEmail()));
+        when(itemRepository.findAllByOwnerId(anyLong())).thenReturn(List.of(item));
+        when(bookingRepository.findAllByItemIdsAndStatusOrderByStartAsc(anyList(), any())).thenReturn(List.of());
+        when(commentRepository.findAllByItemIdIn(anyList())).thenReturn(List.of());
+
+        List<ItemDto> result = itemService.findAllEnrichedByUser(user.getId());
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertNull(result.get(0).getLastBooking());
+        assertNull(result.get(0).getNextBooking());
+    }
+
+    @Test
+    void findAllEnrichedByUser_ShouldReturnItemsWithNoComments_WhenNoCommentsFound() {
+        when(userService.findById(anyLong())).thenReturn(new UserDto(user.getId(), user.getName(), user.getEmail()));
+        when(itemRepository.findAllByOwnerId(anyLong())).thenReturn(List.of(item));
+        when(bookingRepository.findAllByItemIdsAndStatusOrderByStartAsc(anyList(), any())).thenReturn(List.of(booking));
+        when(commentRepository.findAllByItemIdIn(anyList())).thenReturn(List.of());
+
+        List<ItemDto> result = itemService.findAllEnrichedByUser(user.getId());
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertTrue(result.get(0).getComments().isEmpty());
+    }
 }
