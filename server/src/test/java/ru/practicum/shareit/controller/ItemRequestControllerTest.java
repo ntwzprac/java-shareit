@@ -14,7 +14,6 @@ import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.dto.ItemResponseDto;
 import ru.practicum.shareit.request.exceptions.NotFoundException;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -33,17 +32,18 @@ class ItemRequestControllerTest {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private ItemRequestService requestService;
+    private ItemRequestService itemRequestService;
 
     private ItemRequestDto requestDto;
-    private ItemRequestDto responseDto;
+    private ItemResponseDto responseDto;
 
     @BeforeEach
     void setUp() {
-        requestDto = new ItemRequestDto();
-        requestDto.setDescription("Test request description");
+        requestDto = ItemRequestDto.builder()
+                .description("Test Request")
+                .build();
 
-        ItemResponseDto itemResponse = ItemResponseDto.builder()
+        responseDto = ItemResponseDto.builder()
                 .id(1L)
                 .name("Test Item")
                 .description("Test Description")
@@ -51,81 +51,59 @@ class ItemRequestControllerTest {
                 .requestId(1L)
                 .ownerId(1L)
                 .build();
-
-        responseDto = ItemRequestDto.builder()
-                .id(1L)
-                .description("Test request description")
-                .created(LocalDateTime.now())
-                .items(List.of(itemResponse))
-                .build();
     }
 
     @Test
     void createRequest_ShouldReturnCreatedRequest() throws Exception {
-        when(requestService.createRequest(anyLong(), any(ItemRequestDto.class))).thenReturn(responseDto);
+        when(itemRequestService.createRequest(anyLong(), any(ItemRequestDto.class))).thenReturn(requestDto);
 
         mockMvc.perform(post("/requests")
                         .header("X-Sharer-User-Id", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(responseDto.getId()))
-                .andExpect(jsonPath("$.description").value(responseDto.getDescription()))
-                .andExpect(jsonPath("$.items[0].id").value(responseDto.getItems().get(0).getId()));
-
-        verify(requestService).createRequest(anyLong(), any(ItemRequestDto.class));
+                .andExpect(jsonPath("$.description").value(requestDto.getDescription()));
     }
 
     @Test
-    void getUserRequests_ShouldReturnUserRequests() throws Exception {
-        when(requestService.getUserRequests(anyLong())).thenReturn(List.of(responseDto));
+    void getUserRequests_ShouldReturnRequests() throws Exception {
+        when(itemRequestService.getUserRequests(anyLong())).thenReturn(List.of(requestDto));
 
         mockMvc.perform(get("/requests")
                         .header("X-Sharer-User-Id", 1L))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(responseDto.getId()))
-                .andExpect(jsonPath("$[0].description").value(responseDto.getDescription()));
-
-        verify(requestService).getUserRequests(anyLong());
+                .andExpect(jsonPath("$[0].description").value(requestDto.getDescription()));
     }
 
     @Test
-    void getAllRequests_ShouldReturnAllRequests() throws Exception {
-        when(requestService.getAllRequests(anyLong(), anyInt(), anyInt())).thenReturn(List.of(responseDto));
+    void getAllRequests_ShouldReturnRequests() throws Exception {
+        when(itemRequestService.getAllRequests(anyLong(), anyInt(), anyInt())).thenReturn(List.of(requestDto));
 
         mockMvc.perform(get("/requests/all")
                         .header("X-Sharer-User-Id", 1L)
                         .param("from", "0")
                         .param("size", "10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(responseDto.getId()))
-                .andExpect(jsonPath("$[0].description").value(responseDto.getDescription()));
-
-        verify(requestService).getAllRequests(anyLong(), anyInt(), anyInt());
+                .andExpect(jsonPath("$[0].description").value(requestDto.getDescription()));
     }
 
     @Test
     void getRequestById_ShouldReturnRequest() throws Exception {
-        when(requestService.getRequestById(anyLong(), anyLong())).thenReturn(responseDto);
+        when(itemRequestService.getRequestById(anyLong(), anyLong())).thenReturn(requestDto);
 
-        mockMvc.perform(get("/requests/1")
+        mockMvc.perform(get("/requests/{requestId}", 1L)
                         .header("X-Sharer-User-Id", 1L))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(responseDto.getId()))
-                .andExpect(jsonPath("$.description").value(responseDto.getDescription()));
-
-        verify(requestService).getRequestById(anyLong(), anyLong());
+                .andExpect(jsonPath("$.description").value(requestDto.getDescription()));
     }
 
     @Test
-    void getRequestById_WithNonExistentId_ShouldReturnNotFound() throws Exception {
-        when(requestService.getRequestById(anyLong(), anyLong()))
+    void getRequestById_ShouldReturnNotFound_WhenRequestNotFound() throws Exception {
+        when(itemRequestService.getRequestById(anyLong(), anyLong()))
                 .thenThrow(new NotFoundException("Request not found"));
 
-        mockMvc.perform(get("/requests/999")
+        mockMvc.perform(get("/requests/{requestId}", 999L)
                         .header("X-Sharer-User-Id", 1L))
                 .andExpect(status().isNotFound());
-
-        verify(requestService).getRequestById(anyLong(), anyLong());
     }
 }

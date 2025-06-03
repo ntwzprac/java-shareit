@@ -12,6 +12,7 @@ import ru.practicum.shareit.booking.exceptions.BookingStatusException;
 import ru.practicum.shareit.booking.exceptions.ItemUnavailableException;
 import ru.practicum.shareit.item.exceptions.ItemNotFoundException;
 import ru.practicum.shareit.item.exceptions.ItemAccessDeniedException;
+import ru.practicum.shareit.item.exceptions.CommentNotAllowedException;
 import ru.practicum.shareit.request.exceptions.NotFoundException;
 import ru.practicum.shareit.user.exception.EmailAlreadyUsedException;
 import ru.practicum.shareit.user.exception.EmailNotGivenException;
@@ -91,6 +92,20 @@ public class GlobalExceptionHandler {
         Map<String, String> response = new HashMap<>();
         response.put("Ошибка: ", ex.getMessage());
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(CommentNotAllowedException.class)
+    public ResponseEntity<Map<String, String>> handleCommentNotAllowedException(CommentNotAllowedException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("Ошибка: ", ex.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, String>> handleIllegalArgumentException(IllegalArgumentException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("Ошибка: ", ex.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

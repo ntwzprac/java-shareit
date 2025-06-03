@@ -210,4 +210,57 @@ class ItemServiceImplTest {
         assertEquals(1, result.size());
         assertEquals(commentDto.getText(), result.get(0).getText());
     }
+
+    @Test
+    void getEnrichedItemDto_ShouldReturnEnrichedItemDto() {
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
+        when(bookingRepository.findAllByItemIdsAndStatusOrderByStartAsc(anyList(), any())).thenReturn(List.of(booking));
+        when(commentRepository.findAllByItemIdIn(anyList())).thenReturn(List.of(comment));
+        when(commentMapper.toDto(any(Comment.class))).thenReturn(commentDto);
+
+        ItemDto result = itemService.getEnrichedItemDto(item.getId(), user.getId());
+
+        assertNotNull(result);
+        assertEquals(item.getId(), result.getId());
+        assertEquals(item.getName(), result.getName());
+        assertEquals(item.getDescription(), result.getDescription());
+        assertEquals(item.getAvailable(), result.getAvailable());
+        assertNotNull(result.getComments());
+        assertEquals(1, result.getComments().size());
+    }
+
+    @Test
+    void findAllEnrichedByUser_ShouldReturnEnrichedItemDtos() {
+        when(userService.findById(anyLong())).thenReturn(new UserDto(user.getId(), user.getName(), user.getEmail()));
+        when(itemRepository.findAllByOwnerId(anyLong())).thenReturn(List.of(item));
+        when(bookingRepository.findAllByItemIdsAndStatusOrderByStartAsc(anyList(), any())).thenReturn(List.of(booking));
+        when(commentRepository.findAllByItemIdIn(anyList())).thenReturn(List.of(comment));
+        when(commentMapper.toDto(any(Comment.class))).thenReturn(commentDto);
+
+        List<ItemDto> result = itemService.findAllEnrichedByUser(user.getId());
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        ItemDto itemDto = result.get(0);
+        assertEquals(item.getId(), itemDto.getId());
+        assertEquals(item.getName(), itemDto.getName());
+        assertEquals(item.getDescription(), itemDto.getDescription());
+        assertEquals(item.getAvailable(), itemDto.getAvailable());
+        assertNotNull(itemDto.getComments());
+        assertEquals(1, itemDto.getComments().size());
+    }
+
+    @Test
+    void findAllByRequestId_ShouldReturnItems() {
+        when(itemRepository.findAllByRequestId(anyLong())).thenReturn(List.of(item));
+
+        List<Item> result = itemService.findAllByRequestId(1L);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(item.getId(), result.get(0).getId());
+        assertEquals(item.getName(), result.get(0).getName());
+        assertEquals(item.getDescription(), result.get(0).getDescription());
+        assertEquals(item.getAvailable(), result.get(0).getAvailable());
+    }
 }
