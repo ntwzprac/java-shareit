@@ -19,7 +19,6 @@ import ru.practicum.shareit.item.mapper.CommentMapper;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.ItemRequestRepository;
-import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.UserService;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
@@ -115,8 +114,8 @@ class ItemServiceImplTest {
         Item updatedItem = new Item();
         updatedItem.setName("Updated Name");
 
-        assertThrows(ItemAccessDeniedException.class, () -> 
-            itemService.update(updatedItem, item.getId(), 999L)
+        assertThrows(ItemAccessDeniedException.class, () ->
+                itemService.update(updatedItem, item.getId(), 999L)
         );
     }
 
@@ -135,8 +134,8 @@ class ItemServiceImplTest {
     void findById_ShouldThrowException_WhenItemNotFound() {
         when(itemRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        assertThrows(ItemNotFoundException.class, () -> 
-            itemService.findById(999L)
+        assertThrows(ItemNotFoundException.class, () ->
+                itemService.findById(999L)
         );
     }
 
@@ -195,7 +194,7 @@ class ItemServiceImplTest {
         when(bookingValidationService.hasUserBookedItem(anyLong(), anyLong())).thenReturn(false);
 
         assertThrows(CommentNotAllowedException.class, () ->
-            itemService.addComment(item.getId(), user.getId(), commentDto)
+                itemService.addComment(item.getId(), user.getId(), commentDto)
         );
     }
 
@@ -211,4 +210,4 @@ class ItemServiceImplTest {
         assertEquals(1, result.size());
         assertEquals(commentDto.getText(), result.get(0).getText());
     }
-} 
+}

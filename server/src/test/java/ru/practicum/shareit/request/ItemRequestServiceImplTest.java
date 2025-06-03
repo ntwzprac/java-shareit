@@ -10,7 +10,6 @@ import org.springframework.data.domain.PageRequest;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
-import ru.practicum.shareit.request.dto.ItemResponseDto;
 import ru.practicum.shareit.request.exceptions.NotFoundException;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.UserRepository;
@@ -74,8 +73,8 @@ class ItemRequestServiceImplTest {
     void createRequest_ShouldThrowException_WhenUserNotFound() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        assertThrows(NotFoundException.class, () -> 
-            itemRequestService.createRequest(999L, requestDto)
+        assertThrows(NotFoundException.class, () ->
+                itemRequestService.createRequest(999L, requestDto)
         );
     }
 
@@ -96,8 +95,8 @@ class ItemRequestServiceImplTest {
     void getUserRequests_ShouldThrowException_WhenUserNotFound() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        assertThrows(NotFoundException.class, () -> 
-            itemRequestService.getUserRequests(999L)
+        assertThrows(NotFoundException.class, () ->
+                itemRequestService.getUserRequests(999L)
         );
     }
 
@@ -119,8 +118,8 @@ class ItemRequestServiceImplTest {
     void getAllRequests_ShouldThrowException_WhenUserNotFound() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        assertThrows(NotFoundException.class, () -> 
-            itemRequestService.getAllRequests(999L, 0, 10)
+        assertThrows(NotFoundException.class, () ->
+                itemRequestService.getAllRequests(999L, 0, 10)
         );
     }
 
@@ -140,8 +139,8 @@ class ItemRequestServiceImplTest {
     void getRequestById_ShouldThrowException_WhenUserNotFound() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        assertThrows(NotFoundException.class, () -> 
-            itemRequestService.getRequestById(999L, request.getId())
+        assertThrows(NotFoundException.class, () ->
+                itemRequestService.getRequestById(999L, request.getId())
         );
     }
 
@@ -150,8 +149,8 @@ class ItemRequestServiceImplTest {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
         when(requestRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        assertThrows(NotFoundException.class, () -> 
-            itemRequestService.getRequestById(user.getId(), 999L)
+        assertThrows(NotFoundException.class, () ->
+                itemRequestService.getRequestById(user.getId(), 999L)
         );
     }
-} 
+}

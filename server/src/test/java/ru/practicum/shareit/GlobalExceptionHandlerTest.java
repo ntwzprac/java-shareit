@@ -6,7 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.MissingServletRequestParameterException;
 import ru.practicum.shareit.booking.exceptions.BookingAccessDeniedException;
 import ru.practicum.shareit.booking.exceptions.BookingNotFoundException;
 import ru.practicum.shareit.booking.exceptions.BookingStatusException;
@@ -18,7 +17,6 @@ import ru.practicum.shareit.user.exception.EmailAlreadyUsedException;
 import ru.practicum.shareit.user.exception.EmailNotGivenException;
 import ru.practicum.shareit.user.exception.UserNotFoundException;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -134,4 +132,4 @@ class GlobalExceptionHandlerTest {
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertEquals("default message", response.getBody().get("error"));
     }
-} 
+}

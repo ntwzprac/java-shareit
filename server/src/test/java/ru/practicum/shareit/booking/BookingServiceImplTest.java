@@ -7,14 +7,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import ru.practicum.shareit.booking.dto.BookingCreateDto;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.exceptions.BookingAccessDeniedException;
 import ru.practicum.shareit.booking.exceptions.BookingNotFoundException;
-import ru.practicum.shareit.booking.exceptions.BookingStatusException;
 import ru.practicum.shareit.booking.exceptions.ItemUnavailableException;
-import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.item.ItemService;
@@ -98,8 +95,8 @@ class BookingServiceImplTest {
         when(userService.findById(anyLong())).thenReturn(new UserDto(user.getId(), user.getName(), user.getEmail()));
         when(itemService.findById(anyLong())).thenReturn(item);
 
-        assertThrows(ItemUnavailableException.class, () -> 
-            bookingService.create(bookingCreateDto, user.getId())
+        assertThrows(ItemUnavailableException.class, () ->
+                bookingService.create(bookingCreateDto, user.getId())
         );
     }
 
@@ -108,8 +105,8 @@ class BookingServiceImplTest {
         when(userService.findById(anyLong())).thenReturn(new UserDto(owner.getId(), owner.getName(), owner.getEmail()));
         when(itemService.findById(anyLong())).thenReturn(item);
 
-        assertThrows(BookingAccessDeniedException.class, () -> 
-            bookingService.create(bookingCreateDto, owner.getId())
+        assertThrows(BookingAccessDeniedException.class, () ->
+                bookingService.create(bookingCreateDto, owner.getId())
         );
     }
 
@@ -141,8 +138,8 @@ class BookingServiceImplTest {
     void approve_ShouldThrowException_WhenNotOwner() {
         when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(booking));
 
-        assertThrows(BookingAccessDeniedException.class, () -> 
-            bookingService.approve(booking.getId(), user.getId(), true)
+        assertThrows(BookingAccessDeniedException.class, () ->
+                bookingService.approve(booking.getId(), user.getId(), true)
         );
     }
 
@@ -150,8 +147,8 @@ class BookingServiceImplTest {
     void approve_ShouldThrowException_WhenBookingNotFound() {
         when(bookingRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        assertThrows(BookingNotFoundException.class, () -> 
-            bookingService.approve(999L, owner.getId(), true)
+        assertThrows(BookingNotFoundException.class, () ->
+                bookingService.approve(999L, owner.getId(), true)
         );
     }
 
@@ -170,8 +167,8 @@ class BookingServiceImplTest {
     void findById_ShouldThrowException_WhenBookingNotFound() {
         when(bookingRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        assertThrows(BookingNotFoundException.class, () -> 
-            bookingService.findById(999L, user.getId())
+        assertThrows(BookingNotFoundException.class, () ->
+                bookingService.findById(999L, user.getId())
         );
     }
 
@@ -200,4 +197,4 @@ class BookingServiceImplTest {
         assertEquals(1, result.size());
         assertEquals(bookingDto.getId(), result.get(0).getId());
     }
-} 
+}
