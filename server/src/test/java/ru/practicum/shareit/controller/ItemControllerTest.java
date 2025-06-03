@@ -236,4 +236,14 @@ class ItemControllerTest {
                         .content(objectMapper.writeValueAsString(commentDto)))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    void search_ShouldReturnEmptyList_WhenTextIsBlank() throws Exception {
+        mockMvc.perform(get("/items/search")
+                        .param("text", "   ")
+                        .header("X-Sharer-User-Id", 1L))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").isEmpty());
+    }
 }

@@ -63,4 +63,76 @@ class BookingValidationServiceTest {
 
         assertFalse(result);
     }
+
+    @Test
+    void hasUserBookedItem_ShouldReturnFalse_WhenBookingIsRejected() {
+        User user = new User(1L, "Test User", "test@test.com");
+        Item item = new Item(1L, "Test Item", "Test Description", true, user, null);
+        Booking booking = new Booking();
+        booking.setId(1L);
+        booking.setItem(item);
+        booking.setBooker(user);
+        booking.setStatus(BookingStatus.REJECTED);
+        booking.setStart(LocalDateTime.now().minusDays(2));
+        booking.setEnd(LocalDateTime.now().minusDays(1));
+
+        when(bookingRepository.findByBookerIdAndItemIdAndStatusAndEndBefore(
+                any(Long.class),
+                any(Long.class),
+                any(BookingStatus.class),
+                any(LocalDateTime.class)
+        )).thenReturn(Optional.empty());
+
+        boolean result = bookingValidationService.hasUserBookedItem(user.getId(), item.getId());
+
+        assertFalse(result);
+    }
+
+    @Test
+    void hasUserBookedItem_ShouldReturnFalse_WhenBookingIsWaiting() {
+        User user = new User(1L, "Test User", "test@test.com");
+        Item item = new Item(1L, "Test Item", "Test Description", true, user, null);
+        Booking booking = new Booking();
+        booking.setId(1L);
+        booking.setItem(item);
+        booking.setBooker(user);
+        booking.setStatus(BookingStatus.WAITING);
+        booking.setStart(LocalDateTime.now().minusDays(2));
+        booking.setEnd(LocalDateTime.now().minusDays(1));
+
+        when(bookingRepository.findByBookerIdAndItemIdAndStatusAndEndBefore(
+                any(Long.class),
+                any(Long.class),
+                any(BookingStatus.class),
+                any(LocalDateTime.class)
+        )).thenReturn(Optional.empty());
+
+        boolean result = bookingValidationService.hasUserBookedItem(user.getId(), item.getId());
+
+        assertFalse(result);
+    }
+
+    @Test
+    void hasUserBookedItem_ShouldReturnFalse_WhenBookingIsNotEnded() {
+        User user = new User(1L, "Test User", "test@test.com");
+        Item item = new Item(1L, "Test Item", "Test Description", true, user, null);
+        Booking booking = new Booking();
+        booking.setId(1L);
+        booking.setItem(item);
+        booking.setBooker(user);
+        booking.setStatus(BookingStatus.APPROVED);
+        booking.setStart(LocalDateTime.now().minusDays(1));
+        booking.setEnd(LocalDateTime.now().plusDays(1));
+
+        when(bookingRepository.findByBookerIdAndItemIdAndStatusAndEndBefore(
+                any(Long.class),
+                any(Long.class),
+                any(BookingStatus.class),
+                any(LocalDateTime.class)
+        )).thenReturn(Optional.empty());
+
+        boolean result = bookingValidationService.hasUserBookedItem(user.getId(), item.getId());
+
+        assertFalse(result);
+    }
 }

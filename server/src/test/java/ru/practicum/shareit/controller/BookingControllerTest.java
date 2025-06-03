@@ -59,26 +59,55 @@ class BookingControllerTest {
     void createBooking_ShouldReturnCreatedBooking() throws Exception {
         when(bookingService.create(any(BookingCreateDto.class), anyLong())).thenReturn(bookingDto);
 
-        mockMvc.perform(post("/bookings").header("X-Sharer-User-Id", 1L).contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(bookingCreateDto))).andExpect(status().isOk()).andExpect(jsonPath("$.id").value(bookingDto.getId())).andExpect(jsonPath("$.status").value(bookingDto.getStatus().toString()));
+        mockMvc.perform(post("/bookings")
+                        .header("X-Sharer-User-Id", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(bookingCreateDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(bookingDto.getId()))
+                .andExpect(jsonPath("$.status").value(bookingDto.getStatus().toString()));
 
         verify(bookingService).create(any(BookingCreateDto.class), anyLong());
     }
 
     @Test
     void createBooking_WithUnavailableItem_ShouldReturnBadRequest() throws Exception {
-        when(bookingService.create(any(BookingCreateDto.class), anyLong())).thenThrow(new ItemUnavailableException("Item is not available"));
+        when(bookingService.create(any(BookingCreateDto.class), anyLong()))
+                .thenThrow(new ItemUnavailableException("Item is not available"));
 
-        mockMvc.perform(post("/bookings").header("X-Sharer-User-Id", 1L).contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(bookingCreateDto))).andExpect(status().isBadRequest());
+        mockMvc.perform(post("/bookings")
+                        .header("X-Sharer-User-Id", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(bookingCreateDto)))
+                .andExpect(status().isBadRequest());
 
         verify(bookingService).create(any(BookingCreateDto.class), anyLong());
     }
 
     @Test
     void approveBooking_ShouldReturnApprovedBooking() throws Exception {
-        BookingDto approvedBooking = new BookingDto(1L, bookingDto.getStart(), bookingDto.getEnd(), bookingDto.getItem(), bookingDto.getBooker(), BookingStatus.APPROVED);
+        BookingDto approvedBooking = new BookingDto(1L, bookingDto.getStart(), bookingDto.getEnd(),
+                bookingDto.getItem(), bookingDto.getBooker(), BookingStatus.APPROVED);
         when(bookingService.approve(anyLong(), anyLong(), anyBoolean())).thenReturn(approvedBooking);
 
-        mockMvc.perform(patch("/bookings/1").header("X-Sharer-User-Id", 1L).param("approved", "true")).andExpect(status().isOk()).andExpect(jsonPath("$.status").value(BookingStatus.APPROVED.toString()));
+        mockMvc.perform(patch("/bookings/1")
+                        .header("X-Sharer-User-Id", 1L)
+                        .param("approved", "true"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(BookingStatus.APPROVED.toString()));
+
+        verify(bookingService).approve(anyLong(), anyLong(), anyBoolean());
+    }
+
+    @Test
+    void approveBooking_WithNonExistentId_ShouldReturnNotFound() throws Exception {
+        when(bookingService.approve(anyLong(), anyLong(), anyBoolean()))
+                .thenThrow(new BookingNotFoundException("Booking not found"));
+
+        mockMvc.perform(patch("/bookings/999")
+                        .header("X-Sharer-User-Id", 1L)
+                        .param("approved", "true"))
+                .andExpect(status().isNotFound());
 
         verify(bookingService).approve(anyLong(), anyLong(), anyBoolean());
     }
@@ -87,16 +116,23 @@ class BookingControllerTest {
     void findById_ShouldReturnBooking() throws Exception {
         when(bookingService.findById(anyLong(), anyLong())).thenReturn(bookingDto);
 
-        mockMvc.perform(get("/bookings/1").header("X-Sharer-User-Id", 1L)).andExpect(status().isOk()).andExpect(jsonPath("$.id").value(bookingDto.getId())).andExpect(jsonPath("$.status").value(bookingDto.getStatus().toString()));
+        mockMvc.perform(get("/bookings/1")
+                        .header("X-Sharer-User-Id", 1L))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(bookingDto.getId()))
+                .andExpect(jsonPath("$.status").value(bookingDto.getStatus().toString()));
 
         verify(bookingService).findById(anyLong(), anyLong());
     }
 
     @Test
     void findById_WithNonExistentId_ShouldReturnNotFound() throws Exception {
-        when(bookingService.findById(anyLong(), anyLong())).thenThrow(new BookingNotFoundException("Booking not found"));
+        when(bookingService.findById(anyLong(), anyLong()))
+                .thenThrow(new BookingNotFoundException("Booking not found"));
 
-        mockMvc.perform(get("/bookings/999").header("X-Sharer-User-Id", 1L)).andExpect(status().isNotFound());
+        mockMvc.perform(get("/bookings/999")
+                        .header("X-Sharer-User-Id", 1L))
+                .andExpect(status().isNotFound());
 
         verify(bookingService).findById(anyLong(), anyLong());
     }
@@ -106,14 +142,22 @@ class BookingControllerTest {
         List<BookingDto> bookings = List.of(bookingDto);
         when(bookingService.findAllByBooker(anyLong(), any(BookingStatus.class))).thenReturn(bookings);
 
-        mockMvc.perform(get("/bookings").header("X-Sharer-User-Id", 1L).param("state", "ALL")).andExpect(status().isOk()).andExpect(jsonPath("$[0].id").value(bookingDto.getId())).andExpect(jsonPath("$[0].status").value(bookingDto.getStatus().toString()));
+        mockMvc.perform(get("/bookings")
+                        .header("X-Sharer-User-Id", 1L)
+                        .param("state", "ALL"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(bookingDto.getId()))
+                .andExpect(jsonPath("$[0].status").value(bookingDto.getStatus().toString()));
 
         verify(bookingService).findAllByBooker(anyLong(), any(BookingStatus.class));
     }
 
     @Test
     void findAllByBooker_WithUnsupportedStatus_ShouldReturnBadRequest() throws Exception {
-        mockMvc.perform(get("/bookings").header("X-Sharer-User-Id", 1L).param("state", "INVALID")).andExpect(status().isBadRequest());
+        mockMvc.perform(get("/bookings")
+                        .header("X-Sharer-User-Id", 1L)
+                        .param("state", "INVALID"))
+                .andExpect(status().isBadRequest());
 
         verifyNoInteractions(bookingService);
     }
@@ -123,14 +167,22 @@ class BookingControllerTest {
         List<BookingDto> bookings = List.of(bookingDto);
         when(bookingService.findAllByOwner(anyLong(), any(BookingStatus.class))).thenReturn(bookings);
 
-        mockMvc.perform(get("/bookings/owner").header("X-Sharer-User-Id", 1L).param("state", "ALL")).andExpect(status().isOk()).andExpect(jsonPath("$[0].id").value(bookingDto.getId())).andExpect(jsonPath("$[0].status").value(bookingDto.getStatus().toString()));
+        mockMvc.perform(get("/bookings/owner")
+                        .header("X-Sharer-User-Id", 1L)
+                        .param("state", "ALL"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(bookingDto.getId()))
+                .andExpect(jsonPath("$[0].status").value(bookingDto.getStatus().toString()));
 
         verify(bookingService).findAllByOwner(anyLong(), any(BookingStatus.class));
     }
 
     @Test
     void findAllByOwner_WithUnsupportedStatus_ShouldReturnBadRequest() throws Exception {
-        mockMvc.perform(get("/bookings/owner").header("X-Sharer-User-Id", 1L).param("state", "INVALID")).andExpect(status().isBadRequest());
+        mockMvc.perform(get("/bookings/owner")
+                        .header("X-Sharer-User-Id", 1L)
+                        .param("state", "INVALID"))
+                .andExpect(status().isBadRequest());
 
         verifyNoInteractions(bookingService);
     }

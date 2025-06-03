@@ -45,6 +45,15 @@ public class BookingServiceImpl implements BookingService {
             throw new BookingAccessDeniedException("Владелец не может бронировать свою вещь");
         }
 
+        LocalDateTime now = LocalDateTime.now();
+        if (bookingCreateDto.getStart().isBefore(now)) {
+            throw new IllegalArgumentException("Дата начала бронирования не может быть в прошлом");
+        }
+
+        if (bookingCreateDto.getEnd().isBefore(bookingCreateDto.getStart())) {
+            throw new IllegalArgumentException("Дата окончания бронирования не может быть раньше даты начала");
+        }
+
         Booking booking = BookingMapper.toBooking(bookingCreateDto, item);
         booking.setBooker(user);
         booking.setStatus(BookingStatus.WAITING);

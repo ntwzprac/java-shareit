@@ -71,8 +71,8 @@ class ItemServiceImplTest {
         booking.setItem(item);
         booking.setBooker(user);
         booking.setStatus(BookingStatus.APPROVED);
-        booking.setStart(LocalDateTime.now().minusDays(2)); // Set start date in the past
-        booking.setEnd(LocalDateTime.now().minusDays(1));   // Set end date in the past
+        booking.setStart(LocalDateTime.now().minusDays(2));
+        booking.setEnd(LocalDateTime.now().minusDays(1));
     }
 
     @Test
@@ -116,6 +116,19 @@ class ItemServiceImplTest {
 
         assertThrows(ItemAccessDeniedException.class, () ->
                 itemService.update(updatedItem, item.getId(), 999L)
+        );
+    }
+
+    @Test
+    void update_ShouldThrowException_WhenItemNotFound() {
+        when(userService.findById(anyLong())).thenReturn(new UserDto(user.getId(), user.getName(), user.getEmail()));
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        Item updatedItem = new Item();
+        updatedItem.setName("Updated Name");
+
+        assertThrows(ItemNotFoundException.class, () ->
+                itemService.update(updatedItem, 999L, user.getId())
         );
     }
 
@@ -199,6 +212,24 @@ class ItemServiceImplTest {
     }
 
     @Test
+    void addComment_ShouldThrowException_WhenItemNotFound() {
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        assertThrows(ItemNotFoundException.class, () ->
+                itemService.addComment(999L, user.getId(), commentDto)
+        );
+    }
+
+    @Test
+    void addComment_ShouldThrowException_WhenUserNotFound() {
+        lenient().when(userService.findById(anyLong())).thenThrow(new RuntimeException("User not found"));
+
+        assertThrows(RuntimeException.class, () ->
+                itemService.addComment(item.getId(), 999L, commentDto)
+        );
+    }
+
+    @Test
     void getItemComments_ShouldReturnComments() {
         when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
         when(commentRepository.findAllByItemId(anyLong())).thenReturn(List.of(comment));
@@ -230,6 +261,15 @@ class ItemServiceImplTest {
     }
 
     @Test
+    void getEnrichedItemDto_ShouldThrowException_WhenItemNotFound() {
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        assertThrows(ItemNotFoundException.class, () ->
+                itemService.getEnrichedItemDto(999L, user.getId())
+        );
+    }
+
+    @Test
     void findAllEnrichedByUser_ShouldReturnEnrichedItemDtos() {
         when(userService.findById(anyLong())).thenReturn(new UserDto(user.getId(), user.getName(), user.getEmail()));
         when(itemRepository.findAllByOwnerId(anyLong())).thenReturn(List.of(item));
@@ -248,6 +288,15 @@ class ItemServiceImplTest {
         assertEquals(item.getAvailable(), itemDto.getAvailable());
         assertNotNull(itemDto.getComments());
         assertEquals(1, itemDto.getComments().size());
+    }
+
+    @Test
+    void findAllEnrichedByUser_ShouldThrowException_WhenUserNotFound() {
+        when(userService.findById(anyLong())).thenThrow(new RuntimeException("User not found"));
+
+        assertThrows(RuntimeException.class, () ->
+                itemService.findAllEnrichedByUser(999L)
+        );
     }
 
     @Test

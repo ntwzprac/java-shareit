@@ -197,4 +197,73 @@ class BookingServiceImplTest {
         assertEquals(1, result.size());
         assertEquals(bookingDto.getId(), result.get(0).getId());
     }
+
+    @Test
+    void create_ShouldThrowException_WhenUserNotFound() {
+        when(userService.findById(anyLong())).thenThrow(new RuntimeException("User not found"));
+
+        assertThrows(RuntimeException.class, () ->
+                bookingService.create(bookingCreateDto, 999L)
+        );
+    }
+
+    @Test
+    void create_ShouldThrowException_WhenItemNotFound() {
+        when(userService.findById(anyLong())).thenReturn(new UserDto(user.getId(), user.getName(), user.getEmail()));
+        when(itemService.findById(anyLong())).thenThrow(new RuntimeException("Item not found"));
+
+        assertThrows(RuntimeException.class, () ->
+                bookingService.create(bookingCreateDto, user.getId())
+        );
+    }
+
+    @Test
+    void create_ShouldThrowException_WhenStartDateInPast() {
+        bookingCreateDto.setStart(LocalDateTime.now().minusDays(1));
+        when(userService.findById(anyLong())).thenReturn(new UserDto(user.getId(), user.getName(), user.getEmail()));
+        when(itemService.findById(anyLong())).thenReturn(item);
+
+        assertThrows(IllegalArgumentException.class, () ->
+                bookingService.create(bookingCreateDto, user.getId())
+        );
+    }
+
+    @Test
+    void create_ShouldThrowException_WhenEndDateBeforeStartDate() {
+        bookingCreateDto.setStart(LocalDateTime.now().plusDays(2));
+        bookingCreateDto.setEnd(LocalDateTime.now().plusDays(1));
+        when(userService.findById(anyLong())).thenReturn(new UserDto(user.getId(), user.getName(), user.getEmail()));
+        when(itemService.findById(anyLong())).thenReturn(item);
+
+        assertThrows(IllegalArgumentException.class, () ->
+                bookingService.create(bookingCreateDto, user.getId())
+        );
+    }
+
+    @Test
+    void findAllByBooker_ShouldThrowException_WhenUserNotFound() {
+        when(userService.findById(anyLong())).thenThrow(new RuntimeException("User not found"));
+
+        assertThrows(RuntimeException.class, () ->
+                bookingService.findAllByBooker(999L, BookingStatus.ALL)
+        );
+    }
+
+    @Test
+    void findAllByOwner_ShouldThrowException_WhenUserNotFound() {
+        when(userService.findById(anyLong())).thenThrow(new RuntimeException("User not found"));
+
+        assertThrows(RuntimeException.class, () ->
+                bookingService.findAllByOwner(999L, BookingStatus.ALL)
+        );
+    }
+
+    @Test
+    void findById_ShouldThrowException_WhenUserNotFound() {
+        when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(booking));
+
+        assertThrows(BookingAccessDeniedException.class, () ->
+                bookingService.findById(booking.getId(), 999L)
+        );
+    }
 }

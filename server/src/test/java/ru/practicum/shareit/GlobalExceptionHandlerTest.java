@@ -10,6 +10,7 @@ import ru.practicum.shareit.booking.exceptions.BookingAccessDeniedException;
 import ru.practicum.shareit.booking.exceptions.BookingNotFoundException;
 import ru.practicum.shareit.booking.exceptions.BookingStatusException;
 import ru.practicum.shareit.booking.exceptions.ItemUnavailableException;
+import ru.practicum.shareit.item.exceptions.CommentNotAllowedException;
 import ru.practicum.shareit.item.exceptions.ItemNotFoundException;
 import ru.practicum.shareit.item.exceptions.ItemAccessDeniedException;
 import ru.practicum.shareit.request.exceptions.NotFoundException;
@@ -131,5 +132,23 @@ class GlobalExceptionHandlerTest {
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertEquals("default message", response.getBody().get("error"));
+    }
+
+    @Test
+    void handleCommentNotAllowedException_ShouldReturnBadRequestStatus() {
+        CommentNotAllowedException ex = new CommentNotAllowedException("Comment not allowed");
+        ResponseEntity<Map<String, String>> response = handler.handleCommentNotAllowedException(ex);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Comment not allowed", response.getBody().get("Ошибка: "));
+    }
+
+    @Test
+    void handleIllegalArgumentException_ShouldReturnBadRequestStatus() {
+        IllegalArgumentException ex = new IllegalArgumentException("Invalid argument");
+        ResponseEntity<Map<String, String>> response = handler.handleIllegalArgumentException(ex);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Invalid argument", response.getBody().get("Ошибка: "));
     }
 }
