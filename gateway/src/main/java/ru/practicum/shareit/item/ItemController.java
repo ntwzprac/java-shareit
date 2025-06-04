@@ -8,6 +8,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.validation.ItemValidator;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
@@ -20,11 +21,13 @@ import jakarta.validation.constraints.PositiveOrZero;
 @Validated
 public class ItemController {
     private final ItemClient itemClient;
+    private final ItemValidator itemValidator;
 
     @PostMapping
     public ResponseEntity<Object> createItem(@RequestHeader("X-Sharer-User-Id") long userId,
                                            @Valid @RequestBody ItemDto itemDto) {
         log.info("Creating item {} for user {}", itemDto, userId);
+        itemValidator.validateItemDto(itemDto);
         return itemClient.createItem(userId, itemDto);
     }
 
@@ -33,6 +36,7 @@ public class ItemController {
                                            @PathVariable long itemId,
                                            @RequestBody ItemDto itemDto) {
         log.info("Updating item {} for user {}", itemId, userId);
+        itemValidator.validateItemDto(itemDto);
         return itemClient.updateItem(userId, itemId, itemDto);
     }
 

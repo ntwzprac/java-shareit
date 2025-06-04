@@ -5,6 +5,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.validation.BookingValidator;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
@@ -19,11 +20,13 @@ import lombok.extern.slf4j.Slf4j;
 @Validated
 public class BookingController {
 	private final BookingClient bookingClient;
+	private final BookingValidator bookingValidator;
 
 	@PostMapping
 	public ResponseEntity<Object> createBooking(@RequestHeader("X-Sharer-User-Id") long userId,
 			@Valid @RequestBody BookingDto bookingDto) {
 		log.info("Creating booking {} for user {}", bookingDto, userId);
+		bookingValidator.validateBookingCreateDto(bookingDto);
 		return bookingClient.createBooking(userId, bookingDto);
 	}
 

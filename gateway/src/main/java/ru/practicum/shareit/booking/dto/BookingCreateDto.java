@@ -5,10 +5,8 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class BookingDto {
-    private Long id;
+public class BookingCreateDto {
     private Long itemId;
     private LocalDateTime start;
     private LocalDateTime end;
-    private String status;
-}
+} 
