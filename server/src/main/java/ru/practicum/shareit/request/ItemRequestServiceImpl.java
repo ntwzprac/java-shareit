@@ -8,13 +8,14 @@ import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.request.exceptions.NotFoundException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
-import ru.practicum.shareit.request.dto.ItemResponseDto;
+import ru.practicum.shareit.request.mapper.ItemRequestMapper;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,7 +43,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
                 .build();
 
         ItemRequest savedRequest = requestRepository.save(request);
-        return convertToDto(savedRequest);
+        return ItemRequestMapper.toDto(savedRequest, List.of());
     }
 
     @Override
@@ -50,9 +51,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         findUserById(userId);
 
         List<ItemRequest> requests = requestRepository.findAllByRequesterIdOrderByCreatedDesc(userId);
-        return requests.stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
+        return convertRequestsToDto(requests);
     }
 
     @Override
@@ -65,9 +64,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
         PageRequest pageRequest = PageRequest.of(from / size, size);
         List<ItemRequest> requests = requestRepository.findAllByRequesterIdNotOrderByCreatedDesc(userId, pageRequest);
-        return requests.stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
+        return convertRequestsToDto(requests);
     }
 
     @Override
@@ -77,27 +74,26 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         ItemRequest request = requestRepository.findById(requestId)
                 .orElseThrow(() -> new NotFoundException("Запрос с id " + requestId + " не найден"));
 
-        return convertToDto(request);
+        List<Item> items = itemRepository.findAllByRequestId(requestId);
+        return ItemRequestMapper.toDto(request, items);
     }
 
-    private ItemRequestDto convertToDto(ItemRequest request) {
-        List<Item> items = itemRepository.findAllByRequestId(request.getId());
-        List<ItemResponseDto> itemResponses = items.stream()
-                .map(item -> ItemResponseDto.builder()
-                        .id(item.getId())
-                        .name(item.getName())
-                        .description(item.getDescription())
-                        .available(item.getAvailable())
-                        .requestId(request.getId())
-                        .ownerId(item.getOwner().getId())
-                        .build())
+    private List<ItemRequestDto> convertRequestsToDto(List<ItemRequest> requests) {
+        if (requests.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> requestIds = requests.stream()
+                .map(ItemRequest::getId)
                 .collect(Collectors.toList());
 
-        return ItemRequestDto.builder()
-                .id(request.getId())
-                .description(request.getDescription())
-                .created(request.getCreated())
-                .items(itemResponses)
-                .build();
+        List<Item> items = itemRepository.findAllByRequestIdIn(requestIds);
+        Map<Long, List<Item>> itemsByRequestId = items.stream()
+                .collect(Collectors.groupingBy(item -> item.getRequest().getId()));
+
+        return requests.stream()
+                .map(request -> ItemRequestMapper.toDto(request, 
+                        itemsByRequestId.getOrDefault(request.getId(), List.of())))
+                .collect(Collectors.toList());
     }
 }

@@ -60,7 +60,6 @@ class ItemRequestServiceImplTest {
     void createRequest_ShouldCreateRequest() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
         when(requestRepository.save(any(ItemRequest.class))).thenReturn(request);
-        when(itemRepository.findAllByRequestId(anyLong())).thenReturn(List.of(item));
 
         ItemRequestDto result = itemRequestService.createRequest(user.getId(), requestDto);
 
@@ -82,7 +81,6 @@ class ItemRequestServiceImplTest {
     void getUserRequests_ShouldReturnRequests() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
         when(requestRepository.findAllByRequesterIdOrderByCreatedDesc(anyLong())).thenReturn(List.of(request));
-        when(itemRepository.findAllByRequestId(anyLong())).thenReturn(List.of(item));
 
         List<ItemRequestDto> result = itemRequestService.getUserRequests(user.getId());
 
@@ -105,7 +103,6 @@ class ItemRequestServiceImplTest {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
         when(requestRepository.findAllByRequesterIdNotOrderByCreatedDesc(anyLong(), any(PageRequest.class)))
                 .thenReturn(List.of(request));
-        when(itemRepository.findAllByRequestId(anyLong())).thenReturn(List.of(item));
 
         List<ItemRequestDto> result = itemRequestService.getAllRequests(user.getId(), 0, 10);
 
@@ -127,7 +124,6 @@ class ItemRequestServiceImplTest {
     void getRequestById_ShouldReturnRequest() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
         when(requestRepository.findById(anyLong())).thenReturn(Optional.of(request));
-        when(itemRepository.findAllByRequestId(anyLong())).thenReturn(List.of(item));
 
         ItemRequestDto result = itemRequestService.getRequestById(user.getId(), request.getId());
 
