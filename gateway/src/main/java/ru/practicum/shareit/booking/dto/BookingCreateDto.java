@@ -9,4 +9,4 @@ public class BookingCreateDto {
     private Long itemId;
     private LocalDateTime start;
     private LocalDateTime end;
-} 
+}

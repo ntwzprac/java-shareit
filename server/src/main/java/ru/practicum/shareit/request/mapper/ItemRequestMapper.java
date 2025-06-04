@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ItemRequestMapper {
-    
+
     public static ItemRequestDto toDto(ItemRequest request, List<Item> items) {
         List<ItemResponseDto> itemResponses = items.stream()
                 .map(item -> ItemResponseDto.builder()
@@ -29,4 +29,4 @@ public class ItemRequestMapper {
                 .items(itemResponses)
                 .build();
     }
-} 
+}

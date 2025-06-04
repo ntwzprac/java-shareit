@@ -78,7 +78,7 @@ public class ItemServiceImpl implements ItemService {
         User user = getUserOrThrow(userId);
         Item existingItem = getItemOrThrow(itemId);
         checkItemOwnership(existingItem, userId);
-        
+
         if (item.getName() != null) {
             existingItem.setName(item.getName());
         }
