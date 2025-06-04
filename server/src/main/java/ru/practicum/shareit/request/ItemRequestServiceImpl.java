@@ -25,11 +25,15 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
 
+    private User findUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
+    }
+
     @Override
     @Transactional
     public ItemRequestDto createRequest(Long userId, ItemRequestDto itemRequestDto) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        User user = findUserById(userId);
 
         ItemRequest request = ItemRequest.builder()
                 .description(itemRequestDto.getDescription())
@@ -43,8 +47,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Override
     public List<ItemRequestDto> getUserRequests(Long userId) {
-        userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        findUserById(userId);
 
         List<ItemRequest> requests = requestRepository.findAllByRequesterIdOrderByCreatedDesc(userId);
         return requests.stream()
@@ -58,8 +61,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
             throw new IllegalArgumentException("Параметры пагинации некорректны");
         }
 
-        userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        findUserById(userId);
 
         PageRequest pageRequest = PageRequest.of(from / size, size);
         List<ItemRequest> requests = requestRepository.findAllByRequesterIdNotOrderByCreatedDesc(userId, pageRequest);
@@ -70,11 +72,10 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Override
     public ItemRequestDto getRequestById(Long userId, Long requestId) {
-        userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        findUserById(userId);
 
         ItemRequest request = requestRepository.findById(requestId)
-                .orElseThrow(() -> new NotFoundException("Запрос не найден"));
+                .orElseThrow(() -> new NotFoundException("Запрос с id " + requestId + " не найден"));
 
         return convertToDto(request);
     }
